@@ -48,8 +48,10 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayList<FriendInfo> previousFriendArrayList = Manager.readChatList();
         Manager.print("PreviousFriendArrayList.size(): " + previousFriendArrayList.size());
-        Iterator<FriendInfo> friendInfoIterator = previousFriendArrayList.iterator();
-        while (friendInfoIterator.hasNext()) adapter.addItem(friendInfoIterator.next());
+        for (FriendInfo friendInfo : previousFriendArrayList) {
+            if (friendInfo != null) adapter.addItem(friendInfo);
+            else Manager.print("Item: Null");
+        }
         adapter.refresh();
     }
 
