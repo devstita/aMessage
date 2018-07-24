@@ -32,6 +32,9 @@ public class ChatInfo implements Serializable {
     public Date getDate() {
         return date;
     }
+    public long getDateToLong() {
+        return date.getTime();
+    }
     public String getDateWithFormat() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("a h:m");
         return simpleDateFormat.format(date);

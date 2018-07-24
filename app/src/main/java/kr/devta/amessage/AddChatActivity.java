@@ -32,6 +32,8 @@ public class AddChatActivity extends AppCompatActivity {
         name = Manager.NONE;
         phone = Manager.NONE;
 
+        phoneEditText.setTransformationMethod(null); // Number Password remove * Character
+
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

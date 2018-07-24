@@ -1,10 +1,12 @@
 package kr.devta.amessage;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.location.LocationManager;
+import android.support.annotation.NonNull;
+import android.util.Base64;
+import android.util.Base64InputStream;
+import android.util.Base64OutputStream;
 import android.util.Log;
 
 import java.io.ByteArrayInputStream;
@@ -12,14 +14,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
 
 public class Manager {
 //    Init Method And Variable
@@ -37,8 +39,10 @@ public class Manager {
     public static final String NAME_TUTORIAL = "Name_Tutorial";
     public static final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
 
-    public static final String NAME_CHAT = "Name_Chat";
-    public static final String KEY_CHAT_LIST_STRING_SET = "Key_ChatListStringSet";
+    public static final String NAME_CHAT_LIST = "Name_ChatList";
+//    public static final String KEY_CHAT_LIST_STRING_SET = "Key_ChatListStringSet";
+//
+    public static final String NAME_CHAT_SEPARATOR = "[$ NAME_CHAT $]";
 
     public static SharedPreferences getSharedPreferences(String name) {
 
@@ -47,93 +51,128 @@ public class Manager {
 
 //    Chat Management
     public static void addChatList(FriendInfo friendInfo) {
-        Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT).getStringSet(Manager.KEY_CHAT_LIST_STRING_SET, null);
+        /* Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getStringSet(Manager.KEY_CHAT_LIST_STRING_SET, null);
         if (previousList == null) previousList = new HashSet<>();
 
-        previousList.add(Manager.serializableToString(friendInfo));
+        String toString = Manager.serializableToString(friendInfo);
+        Manager.print("Manager.addChatList: " + friendInfo.getName() + ", " + toString);
+        previousList.add(toString);
 
-        Manager.getSharedPreferences(Manager.NAME_CHAT).edit().putStringSet(Manager.KEY_CHAT_LIST_STRING_SET, previousList).apply();
+        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putStringSet(Manager.KEY_CHAT_LIST_STRING_SET, previousList).apply(); */
+
+        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
 
     public static void addChat(FriendInfo friendInfo, ChatInfo chatInfo) {
-        Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT).getStringSet(friendInfo.getPhone(), null);
+        /* Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getStringSet(friendInfo.getPhone(), null);
         if (previousList == null) previousList = new HashSet<>();
 
         previousList.add(Manager.serializableToString(chatInfo));
 
-        Manager.getSharedPreferences(Manager.NAME_CHAT).edit().putStringSet(friendInfo.getPhone(), previousList).apply();
+        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putStringSet(friendInfo.getPhone(), previousList).apply(); */
+
+        Manager.getSharedPreferences(Manager.NAME_CHAT_SEPARATOR + friendInfo.getPhone()).edit().putString(String.valueOf(chatInfo.getDateToLong()), chatInfo.getMessage()).apply();
     }
 
     public static ArrayList<FriendInfo> readChatList() {
-        Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT).getStringSet(Manager.KEY_CHAT_LIST_STRING_SET, null);
+        /* Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getStringSet(Manager.KEY_CHAT_LIST_STRING_SET, null);
         ArrayList<FriendInfo> ret = new ArrayList<>();
 
         if (previousList != null && !(previousList.isEmpty())) {
             Iterator<String> iterator = previousList.iterator();
-            while (iterator.hasNext()) ret.add((FriendInfo) Manager.stringToSerializable(iterator.next()));
+            while (iterator.hasNext()) {
+                String curItemWithString = iterator.next();
+                Manager.print("readChatList: " + curItemWithString);
+                FriendInfo curItem = (FriendInfo) Manager.stringToSerializable(curItemWithString);
+//                Manager.print(curItem.getName() + ", " + curItem.getPhone());
+                ret.add(curItem);
+            }
 
-            Collections.sort(ret, new Comparator<FriendInfo>() {
-                @Override
-                public int compare(FriendInfo o1, FriendInfo o2) {
-                    ArrayList<ChatInfo> first = Manager.readChat(o1);
-                    ArrayList<ChatInfo> second = Manager.readChat(o2);
+            if (ret.size() > 1) {
+                Collections.sort(ret, new Comparator<FriendInfo>() {
+                    @Override
+                    public int compare(FriendInfo o1, FriendInfo o2) {
+                        ArrayList<ChatInfo> first = Manager.readChat(o1);
+                        ArrayList<ChatInfo> second = Manager.readChat(o2);
 
-                    Collections.sort(first, new Comparator<ChatInfo>() {
-                        @Override
-                        public int compare(ChatInfo o1, ChatInfo o2) {
-                            int compare = o1.getDate().compareTo(o2.getDate());
-                            int ret = 0;
+                        Collections.sort(first, new Comparator<ChatInfo>() {
+                            @Override
+                            public int compare(ChatInfo o1, ChatInfo o2) {
+                                int compare = o1.getDate().compareTo(o2.getDate());
+                                int ret = 0;
 
-                            if (compare > 0) { // o1.getDate 가 o2.getDate() 보다 나중
-                                ret = -1;
-                            } else if (compare < 0) { // o1.getDate 가 o2.getDate() 보다 일찍
-                                ret = 1;
-                            } else { // o1.getDate 와 o2.getDate() 가 동시
-                                ret = 0;
+                                if (compare > 0) { // o1.getDate 가 o2.getDate() 보다 나중
+                                    ret = -1;
+                                } else if (compare < 0) { // o1.getDate 가 o2.getDate() 보다 일찍
+                                    ret = 1;
+                                } else { // o1.getDate 와 o2.getDate() 가 동시
+                                    ret = 0;
+                                }
+
+                                return ret;
                             }
+                        });
 
-                            return ret;
-                        }
-                    });
+                        Collections.sort(second, new Comparator<ChatInfo>() {
+                            @Override
+                            public int compare(ChatInfo o1, ChatInfo o2) {
+                                int compare = o1.getDate().compareTo(o2.getDate());
+                                int ret = 0;
 
-                    Collections.sort(second, new Comparator<ChatInfo>() {
-                        @Override
-                        public int compare(ChatInfo o1, ChatInfo o2) {
-                            int compare = o1.getDate().compareTo(o2.getDate());
-                            int ret = 0;
+                                if (compare > 0) { // o1.getDate 가 o2.getDate() 보다 나중
+                                    ret = -1;
+                                } else if (compare < 0) { // o1.getDate 가 o2.getDate() 보다 일찍
+                                    ret = 1;
+                                } else { // o1.getDate 와 o2.getDate() 가 동시
+                                    ret = 0;
+                                }
 
-                            if (compare > 0) { // o1.getDate 가 o2.getDate() 보다 나중
-                                ret = -1;
-                            } else if (compare < 0) { // o1.getDate 가 o2.getDate() 보다 일찍
-                                ret = 1;
-                            } else { // o1.getDate 와 o2.getDate() 가 동시
-                                ret = 0;
+                                return ret;
                             }
+                        });
 
-                            return ret;
+                        int compare = first.get(first.size() - 1).getDate().compareTo(second.get(second.size() - 1).getDate());
+                        int ret = 0;
+                        if (compare > 0) { // first 가 second 보다 나중
+                            ret = 1;
+                        } else if (compare < 0) { // first 가 second 보다 일찍
+                            ret = -1;
+                        } else { // first 와 second 가 동시
+                            ret = 0;
                         }
-                    });
 
-                    int compare = first.get(first.size() - 1).getDate().compareTo(second.get(second.size() - 1).getDate());
-                    int ret = 0;
-                    if (compare > 0) { // first 가 second 보다 나중
-                        ret = 1;
-                    } else if (compare < 0) { // first 가 second 보다 일찍
-                        ret = -1;
-                    } else { // first 와 second 가 동시
-                        ret = 0;
+                        return ret;
                     }
+                });
+            }
+        } */
 
-                    return ret;
-                }
-            });
+        ArrayList<FriendInfo> ret = new ArrayList<>();
+
+        Map<String, ?> allDatas = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getAll();
+        Set<String> keys = allDatas.keySet();
+
+        Iterator<String> keysIterator = keys.iterator();
+        while (keysIterator.hasNext()) {
+            String curKey = keysIterator.next();
+            ret.add(new FriendInfo(allDatas.get(curKey).toString(), curKey));
         }
+
+        Collections.sort(ret, new Comparator<FriendInfo>() {
+            @Override
+                public int compare(FriendInfo o1, FriendInfo o2) {
+                long o1LastChat = Manager.readLastChat(o1).getDateToLong();
+                long o2LastChat = Manager.readLastChat(o2).getDateToLong();
+
+                return Collator.getInstance().compare(String.valueOf(o1LastChat), String.valueOf(o2LastChat));
+            }
+        });
 
         return ret;
     }
 
     public static ArrayList<ChatInfo> readChat(FriendInfo friendInfo) {
-        Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT).getStringSet(friendInfo.getPhone(), null);
+        /* Map<String, ?> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getAll();
         ArrayList<ChatInfo> ret = new ArrayList<>();
 
         if (previousList != null && !previousList.isEmpty()) {
@@ -158,7 +197,28 @@ public class Manager {
                     return ret;
                 }
             });
+        } */
+
+        ArrayList<ChatInfo> ret = new ArrayList<>();
+
+        Map<String, ?> allDatas = Manager.getSharedPreferences(Manager.NAME_CHAT_SEPARATOR + friendInfo.getPhone()).getAll();
+        Set<String> keys = allDatas.keySet();
+
+        Iterator<String> keysIterator = keys.iterator();
+        while (keysIterator.hasNext()) {
+            String curKey = keysIterator.next();
+            ret.add(new ChatInfo(allDatas.get(keys).toString(), new Date(Long.valueOf(curKey))));
         }
+
+        Collections.sort(ret, new Comparator<ChatInfo>() {
+            @Override
+            public int compare(ChatInfo o1, ChatInfo o2) {
+                long o1Date = o1.getDateToLong();
+                long o2Date = o2.getDateToLong();
+
+                return Collator.getInstance().compare(o1Date, o2Date);
+            }
+        });
 
         return ret;
     }
@@ -170,12 +230,12 @@ public class Manager {
     }
 
 //    Utility Method
-    public static String serializableToString(Object obj) {
+    public static String serializableToString(@NonNull Object obj) {
         String ret = Manager.NONE;
 
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            ObjectOutputStream oos = new ObjectOutputStream(new Base64OutputStream(baos, Base64.NO_PADDING | Base64.NO_WRAP));
             oos.writeObject(obj);
             oos.flush();
             ret = baos.toString();
@@ -186,14 +246,11 @@ public class Manager {
         return ret;
     }
 
-    public static Object stringToSerializable(String obj) {
+    public static Object stringToSerializable(@NonNull String obj) {
         Object ret = null;
 
         try {
-            byte bytes[] = obj.getBytes();
-            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-            ObjectInputStream ois = new ObjectInputStream(bais);
-            ret = ois.readObject();
+            ret = new ObjectInputStream(new Base64InputStream(new ByteArrayInputStream(obj.getBytes()), Base64.NO_PADDING | Base64.NO_WRAP)).readObject();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -205,6 +262,7 @@ public class Manager {
 
 //    Etc Method And Variable
     public static final String NONE = "[$ NONE $]";
+    public static final String DATE = "[$ DATE $]";
 
     public static void print(String m) {
         Log.d("AMESSAGE_DEBUG", m);
