@@ -6,16 +6,16 @@ import java.util.Date;
 
 public class ChatInfo implements Serializable {
     private String message;
-    private Date date;
+    private long date;
 
-    public ChatInfo(String message, Date date) {
+    public ChatInfo(String message, long date) {
         this.message = message;
         this.date = date;
     }
 
     public ChatInfo(String message) {
         this.message = message;
-        this.date = new Date(Manager.getCurrentTimeMills());
+        long date = Manager.getCurrentTimeMills();
     }
 
     public ChatInfo setMessage(String message) {
@@ -30,13 +30,13 @@ public class ChatInfo implements Serializable {
         return message;
     }
     public Date getDate() {
-        return date;
+        return new Date(date);
     }
     public long getDateToLong() {
-        return date.getTime();
+        return date;
     }
     public String getDateWithFormat() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("a h:m");
-        return simpleDateFormat.format(date);
+        return simpleDateFormat.format(getDateToLong());
     }
 }

@@ -40,7 +40,7 @@ public class SplashLogoActivity extends AppCompatActivity {
         };
         TedPermission.Builder tedPermission = TedPermission.with(getApplicationContext());
         tedPermission.setPermissionListener(permissionListener);
-        tedPermission.setPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS
+        tedPermission.setPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_PHONE_NUMBERS, Manifest.permission.READ_CONTACTS
                 , Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS
                 , Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION);
         tedPermission.setRationaleMessage("권한 허용");

@@ -1,9 +1,11 @@
 package kr.devta.amessage;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Base64InputStream;
 import android.util.Base64OutputStream;
@@ -24,32 +26,34 @@ import java.util.Map;
 import java.util.Set;
 
 public class Manager {
-//    Init Method And Variable
+    //    Init Method And Variable
     private static Context context;
     public static void init(Context context) {
         Manager.context = context;
     }
 
-//    Intent Request Code
+    //    Intent Request Code
     public static final int REQUEST_CODE_FIREBASE_LOGIN = 1000;
     public static final int REQUEST_CODE_ADD_FRIEND = 1001;
     public static final int REQUEST_CODE_CONTACT_INTENT = 1002;
+    public static final int REQUEST_CODE_CHAT = 1003;
 
-//    SharedPreferences
+    //    SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";
     public static final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
 
     public static final String NAME_CHAT_LIST = "Name_ChatList";
-//    public static final String KEY_CHAT_LIST_STRING_SET = "Key_ChatListStringSet";
+    //    public static final String KEY_CHAT_LIST_STRING_SET = "Key_ChatListStringSet";
 //
     public static final String NAME_CHAT_SEPARATOR = "[$ NAME_CHAT $]";
+    public static final String KEY_CHAT_SENDER_SEPARATOR = "$";
 
     public static SharedPreferences getSharedPreferences(String name) {
 
         return Manager.context.getSharedPreferences(name, Context.MODE_PRIVATE);
     }
 
-//    Chat Management
+    //    Chat Management
     public static void addChatList(FriendInfo friendInfo) {
         /* Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getStringSet(Manager.KEY_CHAT_LIST_STRING_SET, null);
         if (previousList == null) previousList = new HashSet<>();
@@ -63,7 +67,7 @@ public class Manager {
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
 
-    public static void addChat(FriendInfo friendInfo, ChatInfo chatInfo) {
+    public static void addChat(int sender, FriendInfo friendInfo, ChatInfo chatInfo) { // sender -> 1: Me, -1: Friend
         /* Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getStringSet(friendInfo.getPhone(), null);
         if (previousList == null) previousList = new HashSet<>();
 
@@ -71,7 +75,9 @@ public class Manager {
 
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putStringSet(friendInfo.getPhone(), previousList).apply(); */
 
-        Manager.getSharedPreferences(Manager.NAME_CHAT_SEPARATOR + friendInfo.getPhone()).edit().putString(String.valueOf(chatInfo.getDateToLong()), chatInfo.getMessage()).apply();
+        Manager.getSharedPreferences(Manager.NAME_CHAT_SEPARATOR + friendInfo.getPhone()).edit().putString(
+                ((sender == 1) ? Manager.getMyPhone() : friendInfo.getPhone()) + Manager.KEY_CHAT_SENDER_SEPARATOR + String.valueOf(chatInfo.getDateToLong())
+                , chatInfo.getMessage()).apply();
     }
 
     public static ArrayList<FriendInfo> readChatList() {
@@ -160,7 +166,7 @@ public class Manager {
 
         Collections.sort(ret, new Comparator<FriendInfo>() {
             @Override
-                public int compare(FriendInfo o1, FriendInfo o2) {
+            public int compare(FriendInfo o1, FriendInfo o2) {
                 long o1LastChat = Manager.readLastChat(o1).getDateToLong();
                 long o2LastChat = Manager.readLastChat(o2).getDateToLong();
 
@@ -207,7 +213,10 @@ public class Manager {
         Iterator<String> keysIterator = keys.iterator();
         while (keysIterator.hasNext()) {
             String curKey = keysIterator.next();
-            ret.add(new ChatInfo(allDatas.get(keys).toString(), new Date(Long.valueOf(curKey))));
+            String sender = (curKey.split(Manager.KEY_CHAT_SENDER_SEPARATOR)[0]);
+            int senderInteger = (sender.equals(getMyPhone()) ? 1 : -1);
+            String date = (curKey.split(Manager.KEY_CHAT_SENDER_SEPARATOR)[1]);
+            ret.add(new ChatInfo(allDatas.get(keys).toString(), new Date(Long.valueOf(date))));
         }
 
         Collections.sort(ret, new Comparator<ChatInfo>() {
@@ -229,7 +238,7 @@ public class Manager {
         return chats.get(chats.size() - 1);
     }
 
-//    Utility Method
+    //    Utility Method
     public static String serializableToString(@NonNull Object obj) {
         String ret = Manager.NONE;
 
@@ -260,7 +269,21 @@ public class Manager {
         return ret;
     }
 
-//    Etc Method And Variable
+    @SuppressLint("MissingPermission")
+    public static String getMyPhone() {
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        String phone = Manager.NONE;
+
+        if (telephonyManager.getLine1Number() != null) phone = telephonyManager.getLine1Number();
+        else if (telephonyManager.getSimSerialNumber() != null) phone = telephonyManager.getSimSerialNumber();
+
+        phone.replace("+82", String.valueOf(0));
+        if (phone.startsWith("82")) phone.replace("82", "");
+
+        return phone;
+    }
+
+    //    Etc Method And Variable
     public static final String NONE = "[$ NONE $]";
     public static final String DATE = "[$ DATE $]";
 
