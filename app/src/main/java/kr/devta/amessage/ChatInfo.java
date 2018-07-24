@@ -23,6 +23,10 @@ public class ChatInfo implements Serializable {
         return this;
     }
     public ChatInfo setDate(Date date) {
+        this.date = date.getTime();
+        return this;
+    }
+    public ChatInfo setDate(long date) {
         this.date = date;
         return this;
     }
@@ -30,13 +34,13 @@ public class ChatInfo implements Serializable {
         return message;
     }
     public Date getDate() {
-        return new Date(date);
+        return new Date(((date > 0) ? date : -date));
     }
     public long getDateToLong() {
         return date;
     }
     public String getDateWithFormat() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("a h:m");
-        return simpleDateFormat.format(getDateToLong());
+        return simpleDateFormat.format(getDate());
     }
 }

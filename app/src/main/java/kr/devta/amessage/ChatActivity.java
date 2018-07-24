@@ -17,6 +17,7 @@ public class ChatActivity extends AppCompatActivity {
     Button sendButton;
 
     FriendInfo friendInfo;
+    ChatingListViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +29,9 @@ public class ChatActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.chat_SendButton);
 
         friendInfo = (FriendInfo) getIntent().getSerializableExtra("FriendInfo");
+        adapter = new ChatingListViewAdapter(getApplicationContext());
+
+        chatingListView.setAdapter(adapter);
 
         messageEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -52,10 +56,23 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String message = messageEditText.getText().toString();
+                if (message == null || message.isEmpty()) return;
+
+                ChatInfo chatInfo = new ChatInfo(message);
+
+                Manager.send(friendInfo, chatInfo);
+
+                adapter.addItem(chatInfo);
+                Manager.addChat(1, friendInfo, chatInfo);
             }
         });
 
         ArrayList<ChatInfo> chats = Manager.readChat(friendInfo);
-        for (ChatInfo chat : chats)
+        for (ChatInfo chat : chats) {
+            String message = chat.getMessage();
+            long originDate = chat.getDateToLong();
+            long date = Math.abs(originDate);
+            int sender = (int) (originDate / Math.abs(originDate));
+        }
     }
 }

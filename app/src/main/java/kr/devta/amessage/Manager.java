@@ -216,7 +216,7 @@ public class Manager {
             String sender = (curKey.split(Manager.KEY_CHAT_SENDER_SEPARATOR)[0]);
             int senderInteger = (sender.equals(getMyPhone()) ? 1 : -1);
             String date = (curKey.split(Manager.KEY_CHAT_SENDER_SEPARATOR)[1]);
-            ret.add(new ChatInfo(allDatas.get(keys).toString(), new Date(Long.valueOf(date))));
+            ret.add(new ChatInfo(allDatas.get(keys).toString(), (Long.valueOf(date) * senderInteger)));
         }
 
         Collections.sort(ret, new Comparator<ChatInfo>() {
@@ -238,7 +238,12 @@ public class Manager {
         return chats.get(chats.size() - 1);
     }
 
-    //    Utility Method
+//    Networking And SMS
+    public static void send(FriendInfo friendInfo, ChatInfo chatInfo) {
+
+    }
+
+//    Utility Method
     public static String serializableToString(@NonNull Object obj) {
         String ret = Manager.NONE;
 
@@ -283,7 +288,7 @@ public class Manager {
         return phone;
     }
 
-    //    Etc Method And Variable
+//        Etc Method And Variable
     public static final String NONE = "[$ NONE $]";
     public static final String DATE = "[$ DATE $]";
 

@@ -69,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
             Manager.addChatList(friendInfo);
             adapter.addItem(friendInfo);
             adapter.refresh();
+        } else if (requestCode == Manager.REQUEST_CODE_CHAT && resultCode == RESULT_OK) {
+            FriendInfo friendInfo = (FriendInfo) data.getSerializableExtra("FriendInfo");
         }
     }
 }
