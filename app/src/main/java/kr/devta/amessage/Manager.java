@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
@@ -16,7 +15,6 @@ import android.util.Base64InputStream;
 import android.util.Base64OutputStream;
 import android.util.Log;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -134,7 +132,7 @@ public class Manager {
     }
 
 //    Networking And SMS
-    public static void send(FriendInfo friendInfo, ChatInfo chatInfo) {
+    public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         boolean myNetworkStatus = checkNetworkStatus();
         final boolean[] friendNetworkStatus = {false};
 
@@ -158,10 +156,44 @@ public class Manager {
         friendStatusReference.removeEventListener(valueEventListener);
 
         if (myNetworkStatus && friendNetworkStatus[0]) { // Network Message
-            DatabaseReference destReference = rootReference.child("Sender");
+            sendWithNetwork(friendInfo, chatInfo);
         } else { // SMS Message
-            SmsManager.getDefault().sendTextMessage(friendInfo.getPhone(), null, chatInfo.getMessage(), null, null);
+            sendWithSMS(friendInfo, chatInfo);
         }
+    }
+
+    private static void sendWithSMS(FriendInfo friendInfo, ChatInfo chatInfo) {
+        SmsManager.getDefault().sendTextMessage(friendInfo.getPhone(), null, chatInfo.getMessage(), null, null);
+    }
+
+    private static void sendWithNetwork(final FriendInfo friendInfo, final ChatInfo chatInfo) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference rootReference = database.getReference();
+
+        final DatabaseReference destReference = rootReference.child("Chats").child(friendInfo.getPhone());
+        destReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                int maxIdx = -1;
+                for (DataSnapshot curSnapshot : dataSnapshot.getChildren()) {
+                    String key = curSnapshot.getKey();
+                    char[] keyToChar = key.toCharArray();
+                    int curIdx = keyToChar[keyToChar.length - 1];
+                    if (curIdx > maxIdx) maxIdx = curIdx;
+                }
+
+                String curKey = Manager.getMyPhone() + String.valueOf(maxIdx + 1);
+                String date = String.valueOf(chatInfo.getDateToLong());
+                String message = chatInfo.getMessage();
+
+                destReference.child(curKey).setValue(date + Manager.DATE_SEPARATOR + message);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                sendWithSMS(friendInfo, chatInfo);
+            }
+        });
     }
 
     public static boolean checkNetworkStatus() {
@@ -230,7 +262,7 @@ public class Manager {
 
 //        Etc Method And Variable
     public static final String NONE = "[$ NONE $]";
-    public static final String DATE = "[$ DATE $]";
+    public static final String DATE_SEPARATOR = "[$ DATE $]";
 
     public static void print(String m) {
         Log.d("AMESSAGE_DEBUG", m);

@@ -8,8 +8,8 @@
 
     <ListView
         android:id="@+id/chat_ChatingListView"
-        android:layout_width="395dp"
-        android:layout_height="586dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
@@ -19,7 +19,8 @@
         app:layout_constraintBottom_toTopOf="@+id/chat_MessageEditText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.51" />
 
     <EditText
         android:id="@+id/chat_MessageEditText"
