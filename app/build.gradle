@@ -30,6 +30,8 @@ dependencies {
     api 'com.google.firebase:firebase-core:16.0.0' // Google Firebase Core
     implementation 'com.google.firebase:firebase-auth:16.0.1' // Google Firebase Auth
     implementation 'com.firebaseui:firebase-ui-auth:4.0.0' // Google Firebase Auth UI
+    // api 'com.google.firebase:firebase-firestore:15.0.0' // Google Firebase Cloud Firestore
+    implementation 'com.google.firebase:firebase-database:16.0.1' // Google Firebase Realtime Database
     api 'gun0912.ted:tedpermission:2.0.0' // TedPermission
 }
 

@@ -2,14 +2,26 @@ package kr.devta.amessage;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Base64InputStream;
 import android.util.Base64OutputStream;
 import android.util.Log;
+
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -20,7 +32,6 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -43,8 +54,7 @@ public class Manager {
     public static final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
 
     public static final String NAME_CHAT_LIST = "Name_ChatList";
-    //    public static final String KEY_CHAT_LIST_STRING_SET = "Key_ChatListStringSet";
-//
+
     public static final String NAME_CHAT_SEPARATOR = "[$ NAME_CHAT $]";
     public static final String KEY_CHAT_SENDER_SEPARATOR = "$";
 
@@ -55,104 +65,16 @@ public class Manager {
 
     //    Chat Management
     public static void addChatList(FriendInfo friendInfo) {
-        /* Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getStringSet(Manager.KEY_CHAT_LIST_STRING_SET, null);
-        if (previousList == null) previousList = new HashSet<>();
-
-        String toString = Manager.serializableToString(friendInfo);
-        Manager.print("Manager.addChatList: " + friendInfo.getName() + ", " + toString);
-        previousList.add(toString);
-
-        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putStringSet(Manager.KEY_CHAT_LIST_STRING_SET, previousList).apply(); */
-
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
 
     public static void addChat(int sender, FriendInfo friendInfo, ChatInfo chatInfo) { // sender -> 1: Me, -1: Friend
-        /* Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getStringSet(friendInfo.getPhone(), null);
-        if (previousList == null) previousList = new HashSet<>();
-
-        previousList.add(Manager.serializableToString(chatInfo));
-
-        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putStringSet(friendInfo.getPhone(), previousList).apply(); */
-
         Manager.getSharedPreferences(Manager.NAME_CHAT_SEPARATOR + friendInfo.getPhone()).edit().putString(
                 ((sender == 1) ? Manager.getMyPhone() : friendInfo.getPhone()) + Manager.KEY_CHAT_SENDER_SEPARATOR + String.valueOf(chatInfo.getDateToLong())
                 , chatInfo.getMessage()).apply();
     }
 
     public static ArrayList<FriendInfo> readChatList() {
-        /* Set<String> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getStringSet(Manager.KEY_CHAT_LIST_STRING_SET, null);
-        ArrayList<FriendInfo> ret = new ArrayList<>();
-
-        if (previousList != null && !(previousList.isEmpty())) {
-            Iterator<String> iterator = previousList.iterator();
-            while (iterator.hasNext()) {
-                String curItemWithString = iterator.next();
-                Manager.print("readChatList: " + curItemWithString);
-                FriendInfo curItem = (FriendInfo) Manager.stringToSerializable(curItemWithString);
-//                Manager.print(curItem.getName() + ", " + curItem.getPhone());
-                ret.add(curItem);
-            }
-
-            if (ret.size() > 1) {
-                Collections.sort(ret, new Comparator<FriendInfo>() {
-                    @Override
-                    public int compare(FriendInfo o1, FriendInfo o2) {
-                        ArrayList<ChatInfo> first = Manager.readChat(o1);
-                        ArrayList<ChatInfo> second = Manager.readChat(o2);
-
-                        Collections.sort(first, new Comparator<ChatInfo>() {
-                            @Override
-                            public int compare(ChatInfo o1, ChatInfo o2) {
-                                int compare = o1.getDate().compareTo(o2.getDate());
-                                int ret = 0;
-
-                                if (compare > 0) { // o1.getDate 가 o2.getDate() 보다 나중
-                                    ret = -1;
-                                } else if (compare < 0) { // o1.getDate 가 o2.getDate() 보다 일찍
-                                    ret = 1;
-                                } else { // o1.getDate 와 o2.getDate() 가 동시
-                                    ret = 0;
-                                }
-
-                                return ret;
-                            }
-                        });
-
-                        Collections.sort(second, new Comparator<ChatInfo>() {
-                            @Override
-                            public int compare(ChatInfo o1, ChatInfo o2) {
-                                int compare = o1.getDate().compareTo(o2.getDate());
-                                int ret = 0;
-
-                                if (compare > 0) { // o1.getDate 가 o2.getDate() 보다 나중
-                                    ret = -1;
-                                } else if (compare < 0) { // o1.getDate 가 o2.getDate() 보다 일찍
-                                    ret = 1;
-                                } else { // o1.getDate 와 o2.getDate() 가 동시
-                                    ret = 0;
-                                }
-
-                                return ret;
-                            }
-                        });
-
-                        int compare = first.get(first.size() - 1).getDate().compareTo(second.get(second.size() - 1).getDate());
-                        int ret = 0;
-                        if (compare > 0) { // first 가 second 보다 나중
-                            ret = 1;
-                        } else if (compare < 0) { // first 가 second 보다 일찍
-                            ret = -1;
-                        } else { // first 와 second 가 동시
-                            ret = 0;
-                        }
-
-                        return ret;
-                    }
-                });
-            }
-        } */
-
         ArrayList<FriendInfo> ret = new ArrayList<>();
 
         Map<String, ?> allDatas = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getAll();
@@ -178,33 +100,6 @@ public class Manager {
     }
 
     public static ArrayList<ChatInfo> readChat(FriendInfo friendInfo) {
-        /* Map<String, ?> previousList = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getAll();
-        ArrayList<ChatInfo> ret = new ArrayList<>();
-
-        if (previousList != null && !previousList.isEmpty()) {
-            Iterator<String> iterator = previousList.iterator();
-            while (iterator.hasNext()) {
-                ret.add((ChatInfo) stringToSerializable(iterator.next()));
-            }
-
-            Collections.sort(ret, new Comparator<ChatInfo>() {
-                @Override
-                public int compare(ChatInfo o1, ChatInfo o2) { // ret 1: 앞 원소가 먼저, ret -1: 뒤 원소가 먼저, ret 0: Anyway
-                    int compare = o1.getDate().compareTo(o2.getDate());
-                    int ret = 0;
-                    if (compare > 0) { // first 가 second 보다 나중
-                        ret = 1;
-                    } else if (compare < 0) { // first 가 second 보다 일찍
-                        ret = -1;
-                    } else { // first 와 second 가 동시
-                        ret = 0;
-                    }
-
-                    return ret;
-                }
-            });
-        } */
-
         ArrayList<ChatInfo> ret = new ArrayList<>();
 
         Map<String, ?> allDatas = Manager.getSharedPreferences(Manager.NAME_CHAT_SEPARATOR + friendInfo.getPhone()).getAll();
@@ -240,7 +135,45 @@ public class Manager {
 
 //    Networking And SMS
     public static void send(FriendInfo friendInfo, ChatInfo chatInfo) {
+        boolean myNetworkStatus = checkNetworkStatus();
+        final boolean[] friendNetworkStatus = {false};
 
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference rootReference = database.getReference();
+
+        DatabaseReference friendStatusReference = rootReference.child("Users").child(friendInfo.getPhone());
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String enableTime = dataSnapshot.getValue().toString();
+                if (Math.abs(Manager.getCurrentTimeMills() - Long.valueOf(enableTime)) <= 250) friendNetworkStatus[0] = true;
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        friendStatusReference.addValueEventListener(valueEventListener);
+        friendStatusReference.removeEventListener(valueEventListener);
+
+        if (myNetworkStatus && friendNetworkStatus[0]) { // Network Message
+            DatabaseReference destReference = rootReference.child("Sender");
+        } else { // SMS Message
+            SmsManager.getDefault().sendTextMessage(friendInfo.getPhone(), null, chatInfo.getMessage(), null, null);
+        }
+    }
+
+    public static boolean checkNetworkStatus() {
+        boolean ret = false;
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+        if (networkInfo != null)
+            ret = networkInfo.getType() == ConnectivityManager.TYPE_WIFI || networkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+
+        return ret;
     }
 
 //    Utility Method
@@ -272,6 +205,13 @@ public class Manager {
         }
 
         return ret;
+    }
+
+    public static boolean isServiceRunning(Class<?> sc) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE))
+            if (sc.getName().equals(serviceInfo.service.getClassName())) return true;
+        return false;
     }
 
     @SuppressLint("MissingPermission")

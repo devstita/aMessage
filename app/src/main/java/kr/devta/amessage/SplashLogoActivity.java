@@ -1,6 +1,8 @@
 package kr.devta.amessage;
 
 import android.Manifest;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +28,9 @@ public class SplashLogoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash_logo);
         Manager.showActivityName(this);
 
+        Manager.init(getApplicationContext());
+        if (!Manager.isServiceRunning(MainService.class)) startService(new Intent(getApplicationContext(), MainService.class));
+
         PermissionListener permissionListener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -49,7 +54,6 @@ public class SplashLogoActivity extends AppCompatActivity {
     }
 
     private void next() {
-        Manager.init(getApplicationContext());
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
