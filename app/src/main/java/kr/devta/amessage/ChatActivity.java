@@ -1,5 +1,6 @@
 package kr.devta.amessage;
 
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -12,17 +13,21 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 public class ChatActivity extends AppCompatActivity {
+    public static ActivityStatus status = null;
+
     ListView chatingListView;
     EditText messageEditText;
     Button sendButton;
 
     FriendInfo friendInfo;
-    ChatingListViewAdapter adapter;
+    public static ChatingListViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        status = ActivityStatus.CREATED;
 
         chatingListView = findViewById(R.id.chat_ChatingListView);
         messageEditText = findViewById(R.id.chat_MessageEditText);
@@ -74,5 +79,23 @@ public class ChatActivity extends AppCompatActivity {
             long date = Math.abs(originDate);
             int sender = (int) (originDate / Math.abs(originDate));
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        status = ActivityStatus.RESUMED;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        status = ActivityStatus.PAUSED;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        status = ActivityStatus.DESTROYED;
     }
 }

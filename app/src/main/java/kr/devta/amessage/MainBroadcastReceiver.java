@@ -1,5 +1,6 @@
 package kr.devta.amessage;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +29,7 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
                 for (int i = 0; i < messages.length; i++) messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                 String senderPhone = messages[0].getOriginatingAddress();
                 String message = messages[0].getMessageBody();
+                long time = messages[0].getTimestampMillis();
 
                 FriendInfo friendInfo = null;
                 ArrayList<FriendInfo> friendInfos = Manager.readChatList();
@@ -39,6 +41,15 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
                 }
 
                 if (friendInfo != null) {
+                    ChatInfo chatInfo = new ChatInfo(message, -time);
+                    if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) { // Activity is Running
+                        if (ChatActivity.adapter != null) {
+                            ChatActivity.adapter.addItem(chatInfo).refresh();
+//                            ChatActivity.adapter.refresh();
+                        }
+                    } else {
+                        Manager.addChat(-1, friendInfo, chatInfo);
+                    }
                 }
             }
         }

@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Base64;
@@ -15,6 +16,7 @@ import android.util.Base64InputStream;
 import android.util.Base64OutputStream;
 import android.util.Log;
 
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,8 +39,54 @@ import java.util.Set;
 public class Manager {
     //    Init Method And Variable
     private static Context context;
+    public static ChildEventListener firebaseDatabaseChildEventListener;
     public static void init(Context context) {
         Manager.context = context;
+        firebaseDatabaseChildEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String addedChat = dataSnapshot.getValue().toString();
+                long date = Long.valueOf(addedChat.split(Manager.DATE_SEPARATOR)[0]);
+                int sender = (int) (date / Math.abs(date));
+                date = Math.abs(date);
+                String message = addedChat.split(Manager.DATE_SEPARATOR)[1];
+
+                ChatInfo chatInfo = new ChatInfo(message, date);
+
+                String friendPhoneNumber = dataSnapshot.getKey().split(Manager.SEPARATOR)[0];
+                ArrayList<FriendInfo> friendInfos = Manager.readChatList();
+                FriendInfo friendInfo = null;
+                for (FriendInfo curFriendInfo : friendInfos) if (curFriendInfo.getPhone().equals(friendPhoneNumber)) {
+                    friendInfo = new FriendInfo(curFriendInfo.getName(), curFriendInfo.getPhone());
+                    break;
+                }
+
+                if (friendInfo != null); // 친구라면
+                else friendInfo = new FriendInfo(friendPhoneNumber, friendPhoneNumber); // 친구가 아니면
+
+                if (ChatActivity.status.equals(ActivityStatus.RESUMED)) ChatActivity.adapter.addItem(chatInfo).refresh();
+                else Manager.addChat(sender, friendInfo, chatInfo);
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone()).addChildEventListener(firebaseDatabaseChildEventListener);
     }
 
     //    Intent Request Code
@@ -132,6 +180,8 @@ public class Manager {
     }
 
 //    Networking And SMS
+    public static final String DATE_SEPARATOR = "[$ DATE $]";
+
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         boolean myNetworkStatus = checkNetworkStatus();
         final boolean[] friendNetworkStatus = {false};
@@ -182,7 +232,7 @@ public class Manager {
                     if (curIdx > maxIdx) maxIdx = curIdx;
                 }
 
-                String curKey = Manager.getMyPhone() + String.valueOf(maxIdx + 1);
+                String curKey = Manager.getMyPhone() + Manager.SEPARATOR + String.valueOf(maxIdx + 1);
                 String date = String.valueOf(chatInfo.getDateToLong());
                 String message = chatInfo.getMessage();
 
@@ -262,7 +312,7 @@ public class Manager {
 
 //        Etc Method And Variable
     public static final String NONE = "[$ NONE $]";
-    public static final String DATE_SEPARATOR = "[$ DATE $]";
+    public static final String SEPARATOR = "_";
 
     public static void print(String m) {
         Log.d("AMESSAGE_DEBUG", m);
