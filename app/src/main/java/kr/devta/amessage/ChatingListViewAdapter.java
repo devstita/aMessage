@@ -12,10 +12,12 @@ import java.util.ArrayList;
 
 public class ChatingListViewAdapter extends BaseAdapter {
     Context context;
+    FriendInfo friendInfo;
     ArrayList<ChatInfo> items;
 
-    public ChatingListViewAdapter(Context context) {
+    public ChatingListViewAdapter(Context context, FriendInfo friendInfo) {
         this.context = context;
+        this.friendInfo = friendInfo;
         items = new ArrayList<>();
     }
 
@@ -52,6 +54,13 @@ public class ChatingListViewAdapter extends BaseAdapter {
     public ChatingListViewAdapter addItem(ChatInfo item) {
         items.add(item);
         return this;
+    }
+    public ChatingListViewAdapter setFriendInfo(FriendInfo friendInfo) {
+        this.friendInfo = friendInfo;
+        return this;
+    }
+    public FriendInfo getFriendInfo() {
+        return friendInfo;
     }
     public ChatingListViewAdapter removeItem(int position) {
         items.remove(position);

@@ -34,7 +34,7 @@ public class ChatActivity extends AppCompatActivity {
         sendButton = findViewById(R.id.chat_SendButton);
 
         friendInfo = (FriendInfo) getIntent().getSerializableExtra("FriendInfo");
-        adapter = new ChatingListViewAdapter(getApplicationContext());
+        adapter = new ChatingListViewAdapter(getApplicationContext(), friendInfo);
 
         chatingListView.setAdapter(adapter);
 

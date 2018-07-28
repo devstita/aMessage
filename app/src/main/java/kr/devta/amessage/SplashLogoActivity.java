@@ -28,7 +28,6 @@ public class SplashLogoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash_logo);
         Manager.showActivityName(this);
 
-        Manager.init(getApplicationContext());
         if (!Manager.isServiceRunning(MainService.class)) startService(new Intent(getApplicationContext(), MainService.class));
 
         PermissionListener permissionListener = new PermissionListener() {
@@ -54,6 +53,7 @@ public class SplashLogoActivity extends AppCompatActivity {
     }
 
     private void next() {
+        Manager.init(getApplicationContext());
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

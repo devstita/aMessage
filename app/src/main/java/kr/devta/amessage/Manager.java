@@ -64,8 +64,12 @@ public class Manager {
                 if (friendInfo != null); // 친구라면
                 else friendInfo = new FriendInfo(friendPhoneNumber, friendPhoneNumber); // 친구가 아니면
 
-                if (ChatActivity.status.equals(ActivityStatus.RESUMED)) ChatActivity.adapter.addItem(chatInfo).refresh();
-                else Manager.addChat(sender, friendInfo, chatInfo);
+                if (ChatActivity.status.equals(ActivityStatus.RESUMED)) {
+                    if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone()))
+                        ChatActivity.adapter.addItem(chatInfo).refresh();
+                    else Manager.addChat(-1, friendInfo, chatInfo);
+                }
+                else Manager.addChat(-1, friendInfo, chatInfo);
             }
 
             @Override
@@ -233,7 +237,7 @@ public class Manager {
                 }
 
                 String curKey = Manager.getMyPhone() + Manager.SEPARATOR + String.valueOf(maxIdx + 1);
-                String date = String.valueOf(chatInfo.getDateToLong());
+                String date = String.valueOf(Math.abs(chatInfo.getDateToLong()));
                 String message = chatInfo.getMessage();
 
                 destReference.child(curKey).setValue(date + Manager.DATE_SEPARATOR + message);
