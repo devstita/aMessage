@@ -27,8 +27,7 @@ public class SplashLogoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_logo);
         Manager.showActivityName(this);
-
-        if (!Manager.isServiceRunning(MainService.class)) startService(new Intent(getApplicationContext(), MainService.class));
+        Manager.init(getApplicationContext());
 
         PermissionListener permissionListener = new PermissionListener() {
             @Override
@@ -44,7 +43,7 @@ public class SplashLogoActivity extends AppCompatActivity {
         };
         TedPermission.Builder tedPermission = TedPermission.with(getApplicationContext());
         tedPermission.setPermissionListener(permissionListener);
-        tedPermission.setPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_PHONE_NUMBERS, Manifest.permission.READ_CONTACTS
+        tedPermission.setPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS
                 , Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS
                 , Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION);
         tedPermission.setRationaleMessage("권한 허용");
@@ -53,15 +52,21 @@ public class SplashLogoActivity extends AppCompatActivity {
     }
 
     private void next() {
-        Manager.init(getApplicationContext());
+        if (!Manager.isServiceRunning(MainService.class)) {
+            Manager.print("MainService is not running");
+            startService(new Intent(getApplicationContext(), MainService.class));
+        }
+
+        Manager.checkNetworkMessage();
+
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
+            startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);
+        }
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                /* if (FirebaseAuth.getInstance().getCurrentUser() != null) done();
-                else {
-                    List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
-                    startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);
-                } */
                 done();
             }
         }, 1800);

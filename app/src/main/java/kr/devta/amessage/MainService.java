@@ -35,6 +35,7 @@ public class MainService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                Manager.print("Start MainService.Thread");
                 while (threadFlag) {
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     DatabaseReference reference = database.getReference().child("Users");
@@ -49,6 +50,8 @@ public class MainService extends Service {
                         e.printStackTrace();
                     }
                 }
+
+                Manager.print("Stop MainService.Thread");
             }
         }).start();
 

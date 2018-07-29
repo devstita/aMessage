@@ -162,10 +162,12 @@ public class Manager {
         Iterator<String> keysIterator = keys.iterator();
         while (keysIterator.hasNext()) {
             String curKey = keysIterator.next();
-            String sender = (curKey.split(Manager.KEY_CHAT_SENDER_SEPARATOR)[0]);
+            Manager.print("CurKey: " + curKey);
+            String[] splitWithSeparator = new String(curKey).split(Manager.KEY_CHAT_SENDER_SEPARATOR);
+            String sender = (splitWithSeparator[0]);
             int senderInteger = (sender.equals(getMyPhone()) ? 1 : -1);
-            String date = (curKey.split(Manager.KEY_CHAT_SENDER_SEPARATOR)[1]);
-            ret.add(new ChatInfo(allDatas.get(keys).toString(), (Long.valueOf(date) * senderInteger)));
+            String date = (splitWithSeparator[1]);
+            ret.add(new ChatInfo(allDatas.get(curKey).toString(), (Long.valueOf(date) * senderInteger)));
         }
 
         Collections.sort(ret, new Comparator<ChatInfo>() {
@@ -332,8 +334,6 @@ public class Manager {
 
     public static long getCurrentTimeMills() {
         long ret = 0L;
-//        LocationManager locationManager = (LocationManager) Manager.context.getSystemService(Manager.context.LOCATION_SERVICE);
-//        @SuppressLint("MissingPermission") ret = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER).getTime();
         ret = System.currentTimeMillis();
         return ret;
     }
