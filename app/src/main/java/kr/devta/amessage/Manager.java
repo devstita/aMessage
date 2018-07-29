@@ -42,6 +42,9 @@ public class Manager {
     public static ChildEventListener firebaseDatabaseChildEventListener;
     public static void init(Context context) {
         Manager.context = context;
+    }
+
+    public static void checkNetworkMessage() {
         firebaseDatabaseChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -92,6 +95,7 @@ public class Manager {
         };
         FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone()).addChildEventListener(firebaseDatabaseChildEventListener);
     }
+
 
     //    Intent Request Code
     public static final int REQUEST_CODE_FIREBASE_LOGIN = 1000;
