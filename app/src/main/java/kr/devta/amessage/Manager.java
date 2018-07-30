@@ -16,6 +16,7 @@ import android.util.Base64InputStream;
 import android.util.Base64OutputStream;
 import android.util.Log;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,28 +36,31 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class Manager {
     //    Init Method And Variable
     private static Context context;
-    public static ChildEventListener firebaseDatabaseChildEventListener;
     public static void init(Context context) {
+        Manager.print("Manager.init()");
         Manager.context = context;
     }
 
     public static void checkNetworkMessage() {
-        firebaseDatabaseChildEventListener = new ChildEventListener() {
+        FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Object value = dataSnapshot.getValue();
+                if (value == null) return;
+
                 String addedChat = dataSnapshot.getValue().toString();
-                long date = Long.valueOf(addedChat.split(Manager.DATE_SEPARATOR)[0]);
-                int sender = (int) (date / Math.abs(date));
+                long date = Long.valueOf(addedChat.split(Manager.getSeparator(Manager.DATE_SEPARATOR))[0]);
                 date = Math.abs(date);
-                String message = addedChat.split(Manager.DATE_SEPARATOR)[1];
+                String message = addedChat.split(Manager.getSeparator(Manager.DATE_SEPARATOR))[1];
 
                 ChatInfo chatInfo = new ChatInfo(message, date);
 
-                String friendPhoneNumber = dataSnapshot.getKey().split(Manager.SEPARATOR)[0];
+                String friendPhoneNumber = dataSnapshot.getKey().split(Manager.getSeparator(Manager.SEPARATOR))[0];
                 ArrayList<FriendInfo> friendInfos = Manager.readChatList();
                 FriendInfo friendInfo = null;
                 for (FriendInfo curFriendInfo : friendInfos) if (curFriendInfo.getPhone().equals(friendPhoneNumber)) {
@@ -76,24 +80,10 @@ public class Manager {
             }
 
             @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-            @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        };
-        FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone()).addChildEventListener(firebaseDatabaseChildEventListener);
+        });
     }
 
 
@@ -110,7 +100,7 @@ public class Manager {
     public static final String NAME_CHAT_LIST = "Name_ChatList";
 
     public static final String NAME_CHAT_SEPARATOR = "[$ NAME_CHAT $]";
-    public static final String KEY_CHAT_SENDER_SEPARATOR = "$";
+    public static final String KEY_CHAT_SENDER_SEPARATOR = "\\$"; // $: Expression Symbol, \\$: String Symbol ( = java.util.regex.Pattern.quote("$")
 
     public static SharedPreferences getSharedPreferences(String name) {
 
@@ -123,8 +113,8 @@ public class Manager {
     }
 
     public static void addChat(int sender, FriendInfo friendInfo, ChatInfo chatInfo) { // sender -> 1: Me, -1: Friend
-        Manager.getSharedPreferences(Manager.NAME_CHAT_SEPARATOR + friendInfo.getPhone()).edit().putString(
-                ((sender == 1) ? Manager.getMyPhone() : friendInfo.getPhone()) + Manager.KEY_CHAT_SENDER_SEPARATOR + String.valueOf(chatInfo.getDateToLong())
+        Manager.getSharedPreferences(Manager.getSeparator(Manager.NAME_CHAT_SEPARATOR) + friendInfo.getPhone()).edit().putString(
+                ((sender == 1) ? Manager.getMyPhone() : friendInfo.getPhone()) + Manager.getSeparator(Manager.KEY_CHAT_SENDER_SEPARATOR) + String.valueOf(chatInfo.getDateToLong())
                 , chatInfo.getMessage()).apply();
     }
 
@@ -156,14 +146,12 @@ public class Manager {
     public static ArrayList<ChatInfo> readChat(FriendInfo friendInfo) {
         ArrayList<ChatInfo> ret = new ArrayList<>();
 
-        Map<String, ?> allDatas = Manager.getSharedPreferences(Manager.NAME_CHAT_SEPARATOR + friendInfo.getPhone()).getAll();
+        Map<String, ?> allDatas = Manager.getSharedPreferences(Manager.getSeparator(Manager.NAME_CHAT_SEPARATOR) + friendInfo.getPhone()).getAll();
         Set<String> keys = allDatas.keySet();
 
-        Iterator<String> keysIterator = keys.iterator();
-        while (keysIterator.hasNext()) {
-            String curKey = keysIterator.next();
+        for (String curKey : keys) {
             Manager.print("CurKey: " + curKey);
-            String[] splitWithSeparator = new String(curKey).split(Manager.KEY_CHAT_SENDER_SEPARATOR);
+            String[] splitWithSeparator = curKey.split(Manager.getSeparator(Manager.KEY_CHAT_SENDER_SEPARATOR));
             String sender = (splitWithSeparator[0]);
             int senderInteger = (sender.equals(getMyPhone()) ? 1 : -1);
             String date = (splitWithSeparator[1]);
@@ -193,7 +181,7 @@ public class Manager {
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
-        boolean myNetworkStatus = checkNetworkStatus();
+        boolean myNetworkStatus = checkNetworkConnect();
         final boolean[] friendNetworkStatus = {false};
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -230,8 +218,8 @@ public class Manager {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootReference = database.getReference();
 
-        final DatabaseReference destReference = rootReference.child("Chats").child(friendInfo.getPhone());
-        destReference.addValueEventListener(new ValueEventListener() {
+        final DatabaseReference destReference = rootReference.child("Chats");
+        destReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 int maxIdx = -1;
@@ -242,11 +230,11 @@ public class Manager {
                     if (curIdx > maxIdx) maxIdx = curIdx;
                 }
 
-                String curKey = Manager.getMyPhone() + Manager.SEPARATOR + String.valueOf(maxIdx + 1);
+                String curKey = Manager.getMyPhone() + Manager.getSeparator(Manager.SEPARATOR) + String.valueOf(maxIdx + 1);
                 String date = String.valueOf(Math.abs(chatInfo.getDateToLong()));
                 String message = chatInfo.getMessage();
 
-                destReference.child(curKey).setValue(date + Manager.DATE_SEPARATOR + message);
+                destReference.child(curKey).setValue(date + Manager.getSeparator(Manager.DATE_SEPARATOR) + message);
             }
 
             @Override
@@ -254,18 +242,6 @@ public class Manager {
                 sendWithSMS(friendInfo, chatInfo);
             }
         });
-    }
-
-    public static boolean checkNetworkStatus() {
-        boolean ret = false;
-
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-
-        if (networkInfo != null)
-            ret = networkInfo.getType() == ConnectivityManager.TYPE_WIFI || networkInfo.getType() == ConnectivityManager.TYPE_MOBILE;
-
-        return ret;
     }
 
 //    Utility Method
@@ -307,17 +283,24 @@ public class Manager {
     }
 
     @SuppressLint("MissingPermission")
-    public static String getMyPhone() {
-        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+    public static String getMyPhone(Context context) {
+        /* String phone = FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber();
+        phone.replace("+82", "0");
+        if (phone.startsWith("82")) phone.replace("82", ""); */
+
         String phone = Manager.NONE;
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        phone = telephonyManager.getLine1Number();
 
-        if (telephonyManager.getLine1Number() != null) phone = telephonyManager.getLine1Number();
-        else if (telephonyManager.getSimSerialNumber() != null) phone = telephonyManager.getSimSerialNumber();
-
-        phone.replace("+82", String.valueOf(0));
+        phone.replace("+82", "0");
         if (phone.startsWith("82")) phone.replace("82", "");
 
         return phone;
+    }
+
+    public static String getMyPhone() {
+        if (context == null) throw getNullPointerException();
+        return getMyPhone(context);
     }
 
 //        Etc Method And Variable
@@ -336,5 +319,27 @@ public class Manager {
         long ret = 0L;
         ret = System.currentTimeMillis();
         return ret;
+    }
+
+    public static boolean checkNetworkConnect() {
+        if (context == null) throw getNullPointerException();
+
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mobile = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        NetworkInfo wifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        return ((wifi.isAvailable() && wifi.isConnectedOrConnecting())
+                || (mobile.isAvailable() && mobile.isConnectedOrConnecting()));
+    }
+
+    public static String getSeparator(String separator) {
+        return Pattern.quote(separator);
+    }
+
+    public static NullPointerException getNullPointerException() {
+        return new NullPointerException("Manager.context is null");
+    }
+    public static NullPointerException getNullPointerException(String m) {
+        return new NullPointerException(m);
     }
 }

@@ -43,7 +43,7 @@ public class MainService extends Service {
                     String phone = Manager.getMyPhone();
                     String date = String.valueOf(Manager.getCurrentTimeMills());
 
-                    reference.setValue(phone, date);
+                    reference.child(phone).setValue(date);
                     try {
                         Thread.currentThread().sleep(1000);
                     } catch (InterruptedException e) {

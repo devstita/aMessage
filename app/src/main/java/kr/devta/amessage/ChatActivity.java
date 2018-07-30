@@ -74,10 +74,7 @@ public class ChatActivity extends AppCompatActivity {
 
         ArrayList<ChatInfo> chats = Manager.readChat(friendInfo);
         for (ChatInfo chat : chats) {
-            String message = chat.getMessage();
-            long originDate = chat.getDateToLong();
-            long date = Math.abs(originDate);
-            int sender = (int) (originDate / Math.abs(originDate));
+            adapter.addItem(chat);
         }
     }
 

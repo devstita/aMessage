@@ -29,6 +29,11 @@ public class SplashLogoActivity extends AppCompatActivity {
         Manager.showActivityName(this);
         Manager.init(getApplicationContext());
 
+        if (!Manager.checkNetworkConnect()) {
+            Toast.makeText(getApplicationContext(), "Check Network Status..", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
         PermissionListener permissionListener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
@@ -57,24 +62,21 @@ public class SplashLogoActivity extends AppCompatActivity {
             startService(new Intent(getApplicationContext(), MainService.class));
         }
 
-        Manager.checkNetworkMessage();
-
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
             startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);
-        }
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                done();
-            }
-        }, 1800);
+        } else done();
     }
 
     private void done() {
-        startActivity(new Intent(getApplicationContext(), TutorialActivity.class));
-        finish();
+        Manager.checkNetworkMessage();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startActivity(new Intent(getApplicationContext(), TutorialActivity.class));
+                finish();
+            }
+        }, 1800);
     }
 
     @Override
