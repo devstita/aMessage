@@ -40,7 +40,7 @@ public class MainService extends Service {
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     DatabaseReference reference = database.getReference().child("Users");
 
-                    String phone = Manager.getMyPhone();
+                    String phone = Manager.getMyPhone(getApplicationContext());
                     String date = String.valueOf(Manager.getCurrentTimeMills());
 
                     reference.child(phone).setValue(date);

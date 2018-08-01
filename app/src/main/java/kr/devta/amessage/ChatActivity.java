@@ -62,6 +62,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String message = messageEditText.getText().toString();
                 if (message == null || message.isEmpty()) return;
+                messageEditText.setText("");
 
                 ChatInfo chatInfo = new ChatInfo(message);
 

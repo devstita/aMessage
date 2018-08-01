@@ -1,12 +1,10 @@
 package kr.devta.amessage;
 
 import android.Manifest;
-import android.app.ActivityManager;
-import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -57,11 +55,6 @@ public class SplashLogoActivity extends AppCompatActivity {
     }
 
     private void next() {
-        if (!Manager.isServiceRunning(MainService.class)) {
-            Manager.print("MainService is not running");
-            startService(new Intent(getApplicationContext(), MainService.class));
-        }
-
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
             startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);
@@ -69,7 +62,12 @@ public class SplashLogoActivity extends AppCompatActivity {
     }
 
     private void done() {
-        Manager.checkNetworkMessage();
+        if (!Manager.isServiceRunning(MainService.class)) {
+            Manager.print("MainService is not running");
+            startService(new Intent(getApplicationContext(), MainService.class));
+        }
+
+//        Manager.checkNetworkMessage();
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
