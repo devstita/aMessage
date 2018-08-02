@@ -25,12 +25,6 @@ public class SplashLogoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_logo);
         Manager.showActivityName(this);
-        Manager.init(getApplicationContext());
-
-        if (!Manager.checkNetworkConnect()) {
-            Toast.makeText(getApplicationContext(), "Check Network Status..", Toast.LENGTH_SHORT).show();
-            finish();
-        }
 
         PermissionListener permissionListener = new PermissionListener() {
             @Override
@@ -55,6 +49,7 @@ public class SplashLogoActivity extends AppCompatActivity {
     }
 
     private void next() {
+        Manager.init(getApplicationContext());
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
             startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);

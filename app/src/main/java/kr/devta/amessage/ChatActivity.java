@@ -1,11 +1,13 @@
 package kr.devta.amessage;
 
+import android.content.Context;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -70,6 +72,11 @@ public class ChatActivity extends AppCompatActivity {
 
                 adapter.addItem(chatInfo);
                 Manager.addChat(1, friendInfo, chatInfo);
+
+                messageEditText.clearFocus();
+                messageEditText.requestFocus();
+                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).
+                        showSoftInput(messageEditText, InputMethodManager.SHOW_IMPLICIT);
             }
         });
 

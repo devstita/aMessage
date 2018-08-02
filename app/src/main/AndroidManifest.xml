@@ -42,9 +42,9 @@
             android:exported="true" />
 
         <receiver
-            android:name=".MainBroadcastReceiver"
-            android:enabled="true"
-            android:exported="false">
+            android:name=".MainBroadcastReceiver">
+            <!-- android:enabled="true"
+            android:exported="false" -->>
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />

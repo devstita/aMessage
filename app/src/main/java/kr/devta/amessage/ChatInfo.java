@@ -3,6 +3,7 @@ package kr.devta.amessage;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class ChatInfo implements Serializable {
     private String message;
@@ -40,7 +41,10 @@ public class ChatInfo implements Serializable {
         return date;
     }
     public String getDateWithFormat() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("a h:m");
-        return simpleDateFormat.format(getDate());
+        String apm = new SimpleDateFormat("a", Locale.US).format(getDate());
+        String hour = new SimpleDateFormat("hh", Locale.US).format(getDate());
+        String minute = new SimpleDateFormat("mm", Locale.US).format(getDate());
+
+        return (apm + " " + hour + ":" + minute);
     }
 }
