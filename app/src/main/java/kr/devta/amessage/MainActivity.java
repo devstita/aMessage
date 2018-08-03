@@ -44,7 +44,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(new Intent(getApplicationContext(), AddChatActivity.class), Manager.REQUEST_CODE_ADD_FRIEND);
             }
         });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        adapter.clear();
         ArrayList<FriendInfo> previousFriendArrayList = Manager.readChatList();
         Manager.print("PreviousFriendArrayList.size(): " + previousFriendArrayList.size());
         for (FriendInfo friendInfo : previousFriendArrayList) {

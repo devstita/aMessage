@@ -1,13 +1,14 @@
 package kr.devta.amessage;
 
-import android.content.Context;
-import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 public class ChatActivity extends AppCompatActivity {
     public static ActivityStatus status = null;
 
+    Toolbar toolbar;
     ListView chatingListView;
     EditText messageEditText;
     Button sendButton;
@@ -31,12 +33,17 @@ public class ChatActivity extends AppCompatActivity {
 
         status = ActivityStatus.CREATED;
 
+        toolbar = findViewById(R.id.chat_Toolbar);
         chatingListView = findViewById(R.id.chat_ChatingListView);
         messageEditText = findViewById(R.id.chat_MessageEditText);
         sendButton = findViewById(R.id.chat_SendButton);
 
         friendInfo = (FriendInfo) getIntent().getSerializableExtra("FriendInfo");
         adapter = new ChatingListViewAdapter(getApplicationContext(), friendInfo);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowCustomEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         chatingListView.setAdapter(adapter);
 
@@ -70,26 +77,48 @@ public class ChatActivity extends AppCompatActivity {
 
                 Manager.send(friendInfo, chatInfo);
 
-                adapter.addItem(chatInfo);
-                Manager.addChat(1, friendInfo, chatInfo);
-
-                messageEditText.clearFocus();
-                messageEditText.requestFocus();
-                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).
-                        showSoftInput(messageEditText, InputMethodManager.SHOW_IMPLICIT);
+                adapter.addItem(chatInfo).refresh();
+                Manager.addChat(1, friendInfo, chatInfo, true);
             }
         });
-
-        ArrayList<ChatInfo> chats = Manager.readChat(friendInfo);
-        for (ChatInfo chat : chats) {
-            adapter.addItem(chat);
-        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         status = ActivityStatus.RESUMED;
+
+        adapter.clear();
+        ArrayList<ChatInfo> chats = Manager.readChat(friendInfo);
+        for (ChatInfo chat : chats) {
+            adapter.addItem(chat);
+        }
+        adapter.refresh();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+//        return super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.menu_chat, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                break;
+            case R.id.chatMenu_Information:
+                Intent intent = new Intent(getApplicationContext(), ChatSettingActivity.class);
+                intent.putExtra("FriendInfo", friendInfo);
+                startActivityForResult(intent, Manager.REQUEST_CODE_CHAT_SETTING);
+                break;
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -102,5 +131,23 @@ public class ChatActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         status = ActivityStatus.DESTROYED;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == Manager.REQUEST_CODE_CHAT_SETTING && resultCode == RESULT_OK) {
+            switch (data.getStringExtra("Action")) {
+                case "Remove":
+                    finish();
+                    break;
+                case "ChangeName":
+                    ////////////////////////////
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }

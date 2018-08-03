@@ -41,12 +41,18 @@ public class MainService extends Service {
                 break;
             }
 
-            if (friendInfo == null) friendInfo = new FriendInfo(friendPhone, friendPhone); // 친구가 아니면
+            if (friendInfo == null) { // 친구가 아니면
+                friendInfo = new FriendInfo(friendPhone, friendPhone);
+                Manager.addChatList(friendInfo);
+            }
 
+            boolean actived = false;
             if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED))
-                if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone()))
+                if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
                     ChatActivity.adapter.addItem(chatInfo).refresh();
-            Manager.addChat(-1, friendInfo, chatInfo);
+                    actived = true;
+                }
+            Manager.addChat(-1, friendInfo, chatInfo, actived);
             FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone(MainService.this.getApplicationContext())).child(dataSnapshot.getKey()).removeValue();
         }
 

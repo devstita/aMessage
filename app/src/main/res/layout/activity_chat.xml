@@ -7,6 +7,19 @@
     android:layout_height="match_parent"
     tools:context=".ChatActivity">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/chat_Toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:subtitle=" - Friend Phone Number"
+        app:title="FriendName" />
+
     <ListView
         android:id="@+id/chat_ChatingListView"
         android:layout_width="0dp"
@@ -22,7 +35,7 @@
         app:layout_constraintBottom_toTopOf="@+id/chat_MessageEditText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chat_Toolbar"
         app:layout_constraintVertical_bias="0.51" />
 
     <EditText

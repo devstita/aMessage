@@ -47,7 +47,7 @@ public class Manager {
     public static void init(Context context) {
         Manager.print("Manager.init()");
         Manager.context = context;
-        checkNetworkMessage();
+//        checkNetworkMessage();
     }
 
     public static void checkNetworkMessage() {
@@ -77,12 +77,13 @@ public class Manager {
                 if (friendInfo != null); // 친구라면
                 else friendInfo = new FriendInfo(friendPhoneNumber, friendPhoneNumber); // 친구가 아니면
 
-                if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) {
-                    if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone()))
+                boolean actived = false;
+                if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED))
+                    if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
                         ChatActivity.adapter.addItem(chatInfo).refresh();
-                    else Manager.addChat(-1, friendInfo, chatInfo);
-                }
-                else Manager.addChat(-1, friendInfo, chatInfo);
+                        actived = true;
+                    }
+                Manager.addChat(-1, friendInfo, chatInfo, actived);
             }
 
             @Override
@@ -97,6 +98,7 @@ public class Manager {
     public static final int REQUEST_CODE_ADD_FRIEND = 1001;
     public static final int REQUEST_CODE_CONTACT_INTENT = 1002;
     public static final int REQUEST_CODE_CHAT = 1003;
+    public static final int REQUEST_CODE_CHAT_SETTING = 1004;
 
     //    SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";
@@ -111,16 +113,34 @@ public class Manager {
         return Manager.context.getSharedPreferences(name, Context.MODE_PRIVATE);
     }
 
+    public static void removeSharedPreferencesToKey(String name, String key) {
+        Manager.getSharedPreferences(name).edit().remove(key).apply();
+    }
+
+    public static void removeSharedPreferences(String name) {
+        Set<String> keys = Manager.getSharedPreferences(name).getAll().keySet();
+        for (String curKey : keys) removeSharedPreferencesToKey(name, curKey);
+    }
+
     //    Chat Management
     public static void addChatList(FriendInfo friendInfo) {
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
 
-    public static void addChat(int sender, FriendInfo friendInfo, ChatInfo chatInfo) { // sender -> 1: Me, -1: Friend
+    public static void addChat(int sender, FriendInfo friendInfo, ChatInfo chatInfo, boolean actived) { // sender -> 1: Me, -1: Friend
         Manager.getSharedPreferences((Manager.NAME_CHAT_SEPARATOR) + friendInfo.getPhone()).edit().putString(
                 ((sender == 1) ? Manager.getMyPhone() : friendInfo.getPhone()) + (Manager.KEY_CHAT_SENDER_SEPARATOR) + String.valueOf(chatInfo.getDateToLong())
                 , chatInfo.getMessage()).apply();
-        if (sender == -1) Manager.makeNotification(friendInfo, chatInfo);
+        if (sender == -1 && !actived) Manager.makeNotification(friendInfo, chatInfo);
+    }
+
+    public static void changeFriendName(FriendInfo friendInfo, String name) {
+        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), name).apply();
+    }
+
+    public static void removeChat(FriendInfo friendInfo) {
+        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().remove(friendInfo.getPhone()).apply();
+        Manager.removeSharedPreferences((Manager.NAME_CHAT_SEPARATOR) + friendInfo.getPhone());
     }
 
     public static ArrayList<FriendInfo> readChatList() {
@@ -165,8 +185,8 @@ public class Manager {
         Collections.sort(ret, new Comparator<ChatInfo>() {
             @Override
             public int compare(ChatInfo o1, ChatInfo o2) {
-                long o1Date = o1.getDateToLong();
-                long o2Date = o2.getDateToLong();
+                long o1Date = Math.abs(o1.getDateToLong());
+                long o2Date = Math.abs(o2.getDateToLong());
 
                 return Collator.getInstance().compare(String.valueOf(o1Date), String.valueOf(o2Date));
             }

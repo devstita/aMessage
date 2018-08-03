@@ -43,7 +43,7 @@ public class ChatingListViewAdapter extends BaseAdapter {
 
         TextView chatTextView = layout.findViewById(R.id.chatingListViewItem_ChatTextView);
         TextView dateTextView = layout.findViewById(R.id.chatingListViewItem_DateTextView);
-        int sender = (int) (items.get(position).getDateToLong() / Math.abs(items.get(position).getDateToLong()));
+        int sender = ((items.get(position).getDateToLong() > 0) ? 1 : -1);
 
         chatTextView.setText(((sender == 1) ? "Me" : "You") + ": " + items.get(position).getMessage());
         dateTextView.setText(items.get(position).getDateWithFormat());

@@ -44,6 +44,7 @@ public class ChatListViewAdapter extends BaseAdapter {
 
         String name = items.get(position).getName();
         String chat = Manager.readLastChat(items.get(position)).getMessage();
+        int sender = ((Manager.readLastChat(items.get(position)).getDateToLong() > 0) ? 1 : -1);
 
         if (chat.equals(Manager.NONE)) chat = "";
 
@@ -51,7 +52,7 @@ public class ChatListViewAdapter extends BaseAdapter {
         nameTextView.setTextColor(Color.BLACK);
         nameTextView.setTextSize(25);
 
-        chatTextView.setText(chat);
+        chatTextView.setText(((sender == 1) ? "Me" : name) + ": " + chat);
         chatTextView.setTextColor(Color.BLACK);
         chatTextView.setTextSize(18);
 

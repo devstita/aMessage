@@ -47,14 +47,20 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
 
                 Manager.print("Catch SMS: From " + senderPhone + ", " + message);
 
-                if (friendInfo == null) friendInfo = new FriendInfo(senderPhone, senderPhone);
+                if (friendInfo == null) {
+                    friendInfo = new FriendInfo(senderPhone, senderPhone);
+                    Manager.addChatList(friendInfo);
+                }
                 ChatInfo chatInfo = new ChatInfo(message, -time);
 
+                boolean actived = false;
                 if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) // Activity is Running
                     if (ChatActivity.adapter != null)
-                        if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone()))
+                        if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
                             ChatActivity.adapter.addItem(chatInfo).refresh();
-                Manager.addChat(-1, friendInfo, chatInfo);
+                            actived = true;
+                        }
+                Manager.addChat(-1, friendInfo, chatInfo, actived);
             }
         }
     }
