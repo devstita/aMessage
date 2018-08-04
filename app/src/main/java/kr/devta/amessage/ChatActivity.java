@@ -41,6 +41,9 @@ public class ChatActivity extends AppCompatActivity {
         friendInfo = (FriendInfo) getIntent().getSerializableExtra("FriendInfo");
         adapter = new ChatingListViewAdapter(getApplicationContext(), friendInfo);
 
+        toolbar.setTitle(friendInfo.getName());
+        toolbar.setSubtitle(" - " + friendInfo.getPhone());
+
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -143,7 +146,8 @@ public class ChatActivity extends AppCompatActivity {
                     finish();
                     break;
                 case "ChangeName":
-                    ////////////////////////////
+                    friendInfo = (Manager.getUpdatedFriendInfo(friendInfo));
+                    toolbar.setTitle(friendInfo.getName());
                     break;
                 default:
                     break;

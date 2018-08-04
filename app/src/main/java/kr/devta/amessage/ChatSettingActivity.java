@@ -26,6 +26,9 @@ public class ChatSettingActivity extends AppCompatActivity {
 
         friendInfo = (FriendInfo) getIntent().getSerializableExtra("FriendInfo");
 
+        changeFriendNameEditText.setText(friendInfo.getName());
+        changeFriendNameEditText.setHint(friendInfo.getPhone());
+
         removeChatingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -41,10 +44,8 @@ public class ChatSettingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String name = changeFriendNameEditText.getText().toString();
-                if (name == null || name.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), "Check Name", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+
+                if (name.isEmpty()) name = friendInfo.getPhone();
 
                 Manager.changeFriendName(friendInfo, name);
                 Intent result = new Intent();

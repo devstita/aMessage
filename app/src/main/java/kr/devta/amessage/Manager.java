@@ -41,7 +41,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Manager {
-    //    Init Method And Variable
+//    Init Method And Variable
     private static Context context;
 
     public static void init(Context context) {
@@ -93,14 +93,14 @@ public class Manager {
         });
     }
 
-    //    Intent Request Code
+//    Intent Request Code
     public static final int REQUEST_CODE_FIREBASE_LOGIN = 1000;
     public static final int REQUEST_CODE_ADD_FRIEND = 1001;
     public static final int REQUEST_CODE_CONTACT_INTENT = 1002;
     public static final int REQUEST_CODE_CHAT = 1003;
     public static final int REQUEST_CODE_CHAT_SETTING = 1004;
 
-    //    SharedPreferences
+//    SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";
     public static final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
 
@@ -122,7 +122,7 @@ public class Manager {
         for (String curKey : keys) removeSharedPreferencesToKey(name, curKey);
     }
 
-    //    Chat Management
+//    Chat Management
     public static void addChatList(FriendInfo friendInfo) {
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
@@ -136,6 +136,11 @@ public class Manager {
 
     public static void changeFriendName(FriendInfo friendInfo, String name) {
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), name).apply();
+    }
+
+    public static FriendInfo getUpdatedFriendInfo(FriendInfo friendInfo) {
+        String name = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getString(friendInfo.getPhone(), friendInfo.getName());
+        return (new FriendInfo(name, friendInfo.getPhone()));
     }
 
     public static void removeChat(FriendInfo friendInfo) {
@@ -228,8 +233,6 @@ public class Manager {
             return;
         }
 
-        final boolean[] friendNetworkStatus = {false};
-
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootReference = database.getReference();
 
@@ -296,36 +299,6 @@ public class Manager {
     }
 
 //    Utility Method
-    public static String serializableToString(@NonNull Object obj) {
-        String ret = Manager.NONE;
-
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(new Base64OutputStream(baos, Base64.NO_PADDING | Base64.NO_WRAP));
-            oos.writeObject(obj);
-            oos.flush();
-            ret = baos.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return ret;
-    }
-
-    public static Object stringToSerializable(@NonNull String obj) {
-        Object ret = null;
-
-        try {
-            ret = new ObjectInputStream(new Base64InputStream(new ByteArrayInputStream(obj.getBytes()), Base64.NO_PADDING | Base64.NO_WRAP)).readObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        return ret;
-    }
-
     public static boolean isServiceRunning(Class<?> sc) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE))
@@ -365,7 +338,7 @@ public class Manager {
     }
 
     public static long getCurrentTimeMills() {
-        long ret = 0L;
+        long ret;
         ret = System.currentTimeMillis();
         return ret;
     }

@@ -11,6 +11,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class AddChatActivity extends AppCompatActivity {
+    private final int PHONE_NUMBER_LENGTH = 11;
+
     EditText nameEditText;
     EditText phoneEditText;
     Button doneButton;
@@ -52,7 +54,7 @@ public class AddChatActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (innerPhone.length() != 11 || !(innerPhone.startsWith("010") || innerPhone.startsWith("011") || innerPhone.startsWith("012"))) {
+                if (innerPhone.length() != PHONE_NUMBER_LENGTH || !(innerPhone.startsWith("010") || innerPhone.startsWith("011") || innerPhone.startsWith("012"))) {
                     Toast.makeText(getApplicationContext(), "Phone Syntax Error", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -92,8 +94,14 @@ public class AddChatActivity extends AppCompatActivity {
             phone = cursor.getString(1);
             if (!cursor.isClosed()) cursor.close();
 
-            nameEditText.setText(name);
-            phoneEditText.setText(phone);
+            phone = phone.replaceAll("[^0-9]", "");
+
+            if (phone.length() != PHONE_NUMBER_LENGTH)
+                Toast.makeText(getApplicationContext(), "Phone Number Length Error..", Toast.LENGTH_SHORT).show();
+            else {
+                nameEditText.setText(name);
+                phoneEditText.setText(phone);
+            }
         }
     }
 }
