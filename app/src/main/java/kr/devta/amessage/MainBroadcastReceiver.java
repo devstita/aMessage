@@ -48,7 +48,14 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
                 Manager.print("Catch SMS: From " + senderPhone + ", " + message);
 
                 if (friendInfo == null) {
-                    friendInfo = new FriendInfo(senderPhone, senderPhone);
+                    String name = senderPhone;
+                    ArrayList<FriendInfo> contacts = Manager.getContacts(context);
+                    for (FriendInfo curFriendInfo : contacts) if (senderPhone.equals(curFriendInfo.getPhone())) {
+                        name = curFriendInfo.getName();
+                        break;
+                    }
+
+                    friendInfo = new FriendInfo(name, senderPhone);
                     Manager.addChatList(friendInfo);
                 }
                 ChatInfo chatInfo = new ChatInfo(message, -time);

@@ -8,12 +8,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class ChatSettingActivity extends AppCompatActivity {
     EditText changeFriendNameEditText;
     Button removeChatingButton;
     Button changeFriendNameButton;
 
     FriendInfo friendInfo;
+    String nameWhenEmpty;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,9 +28,10 @@ public class ChatSettingActivity extends AppCompatActivity {
         changeFriendNameButton = findViewById(R.id.chatSetting_ChangeFriendNameButton);
 
         friendInfo = (FriendInfo) getIntent().getSerializableExtra("FriendInfo");
+        nameWhenEmpty = friendInfo.getPhone();
 
         changeFriendNameEditText.setText(friendInfo.getName());
-        changeFriendNameEditText.setHint(friendInfo.getPhone());
+        changeFriendNameEditText.setHint(nameWhenEmpty);
 
         removeChatingButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,7 +49,7 @@ public class ChatSettingActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String name = changeFriendNameEditText.getText().toString();
 
-                if (name.isEmpty()) name = friendInfo.getPhone();
+                if (name.isEmpty()) name = nameWhenEmpty;
 
                 Manager.changeFriendName(friendInfo, name);
                 Intent result = new Intent();
@@ -54,5 +58,12 @@ public class ChatSettingActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        ArrayList<FriendInfo> readFromContcts = Manager.getContacts(getApplicationContext());
+        for (FriendInfo curFriendInfo : readFromContcts) if (friendInfo.getPhone().equals(curFriendInfo.getPhone())) {
+            changeFriendNameEditText.setHint(curFriendInfo.getName());
+            nameWhenEmpty = curFriendInfo.getName();
+            break;
+        }
     }
 }

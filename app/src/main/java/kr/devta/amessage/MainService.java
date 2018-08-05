@@ -42,7 +42,14 @@ public class MainService extends Service {
             }
 
             if (friendInfo == null) { // 친구가 아니면
-                friendInfo = new FriendInfo(friendPhone, friendPhone);
+                String name = friendPhone;
+                ArrayList<FriendInfo> contacts = Manager.getContacts(getApplicationContext());
+                for (FriendInfo curFriendInfo : contacts) if (friendPhone.equals(curFriendInfo.getPhone())) {
+                    name = curFriendInfo.getName();
+                    break;
+                }
+
+                friendInfo = new FriendInfo(name, friendPhone);
                 Manager.addChatList(friendInfo);
             }
 

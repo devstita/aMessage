@@ -8,10 +8,15 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
@@ -36,6 +41,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -48,49 +54,6 @@ public class Manager {
         Manager.print("Manager.init()");
         Manager.context = context;
 //        checkNetworkMessage();
-    }
-
-    public static void checkNetworkMessage() {
-        FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getValue() == null) {
-                    Manager.print("No Message here");
-                    return;
-                }
-
-                String addedChat = dataSnapshot.getValue().toString();
-                long date = Long.valueOf(addedChat.split(Pattern.quote(Manager.DATE_SEPARATOR))[0]);
-                date = Math.abs(date);
-                String message = addedChat.split(Pattern.quote(Manager.DATE_SEPARATOR))[1];
-
-                ChatInfo chatInfo = new ChatInfo(message, date);
-
-                String friendPhoneNumber = dataSnapshot.getKey().split(Pattern.quote(Manager.SEPARATOR))[0];
-                ArrayList<FriendInfo> friendInfos = Manager.readChatList();
-                FriendInfo friendInfo = null;
-                for (FriendInfo curFriendInfo : friendInfos) if (curFriendInfo.getPhone().equals(friendPhoneNumber)) {
-                    friendInfo = new FriendInfo(curFriendInfo.getName(), curFriendInfo.getPhone());
-                    break;
-                }
-
-                if (friendInfo != null); // 친구라면
-                else friendInfo = new FriendInfo(friendPhoneNumber, friendPhoneNumber); // 친구가 아니면
-
-                boolean actived = false;
-                if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED))
-                    if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
-                        ChatActivity.adapter.addItem(chatInfo).refresh();
-                        actived = true;
-                    }
-                Manager.addChat(-1, friendInfo, chatInfo, actived);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
 //    Intent Request Code
@@ -182,9 +145,11 @@ public class Manager {
             String[] splitWithSeparator = curKey.split(Pattern.quote(Manager.KEY_CHAT_SENDER_SEPARATOR));
             String sender = (splitWithSeparator[0]);
             int senderInteger = (sender.equals(getMyPhone()) ? 1 : -1);
-            String date = (splitWithSeparator[1]);
-            Manager.print("Add to ret: Message(" + allDatas.get(curKey).toString() + "), Date(" + Long.valueOf(date) * senderInteger + ")");
-            ret.add(new ChatInfo(allDatas.get(curKey).toString(), (Long.valueOf(date) * senderInteger)));
+            Manager.print("Sender: " + sender + ", SenderInt: " + senderInteger);
+            String dateStr = (splitWithSeparator[1]);
+            long date = ((senderInteger == 1) ? Math.abs(Long.valueOf(dateStr)) : -Math.abs(Long.valueOf(dateStr)));
+            Manager.print("Add to ret: Message(" + allDatas.get(curKey).toString() + "), Date(" + date + ")");
+            ret.add(new ChatInfo(allDatas.get(curKey).toString(), date));
         }
 
         Collections.sort(ret, new Comparator<ChatInfo>() {
@@ -321,6 +286,30 @@ public class Manager {
     public static String getMyPhone() {
         if (context == null) throw getNullPointerException();
         return getMyPhone(context);
+    }
+
+    public static ArrayList<FriendInfo> getContacts(Context context) {
+        ArrayList<FriendInfo> ret = new ArrayList<>();
+
+        Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        String[] projection = new String[]{ContactsContract.CommonDataKinds.Phone.CONTACT_ID, ContactsContract.CommonDataKinds.Phone.NUMBER, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME};
+        String[] selectionArgs = null;
+        String sortOrder = ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE LOCALIZED ASC";
+        Cursor contactCursor = context.getContentResolver().query(uri, projection, null, selectionArgs, sortOrder);
+
+        if (contactCursor.moveToFirst()) {
+            do {
+                String phoneNumber = contactCursor.getString(1).replaceAll("[^0-9]", "");
+                if (phoneNumber.length() != 11) continue;
+                String name = contactCursor.getString(2);
+
+                FriendInfo toAdd = new FriendInfo(name, phoneNumber);
+                ret.add(toAdd);
+                Manager.print("Contact Added Item: " + name + ", " + phoneNumber);
+            } while (contactCursor.moveToNext());
+        }
+
+        return ret;
     }
 
 //        Etc Method And Variable

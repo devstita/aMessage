@@ -52,7 +52,7 @@ public class ChatListViewAdapter extends BaseAdapter {
         nameTextView.setTextColor(Color.BLACK);
         nameTextView.setTextSize(25);
 
-        chatTextView.setText(((sender == 1) ? "Me" : name) + ": " + chat);
+        chatTextView.setText(((sender == 1) ? "Me" : "You") + ": " + chat);
         chatTextView.setTextColor(Color.BLACK);
         chatTextView.setTextSize(18);
 
