@@ -16,13 +16,11 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
         // an Intent broadcast.
         // throw new UnsupportedOperationException("Not yet implemented");
 
-        Manager.print("Something is received: " + intent.getAction());
+//        Manager.print("Something is received: " + intent.getAction());
         Manager.init(context);
 
-        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-            if (!Manager.isServiceRunning(MainService.class))
-                context.startService(new Intent(context, MainService.class));
-        }
+        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
+            if (!Manager.isServiceRunning(MainService.class)) context.startService(new Intent(context, MainService.class));
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
 //            Manager.print("He's coming..!!!!");
             Bundle bundle = intent.getExtras();
@@ -45,7 +43,7 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
                     }
                 }
 
-                Manager.print("Catch SMS: From " + senderPhone + ", " + message);
+//                Manager.print("Catch SMS: From " + senderPhone + ", " + message);
 
                 if (friendInfo == null) {
                     String name = senderPhone;

@@ -26,10 +26,19 @@ public class SplashLogoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash_logo);
         Manager.showActivityName(this);
 
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                checkPermission();
+            }
+        }, 1800);
+    }
+
+    private void checkPermission() {
         PermissionListener permissionListener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
-                next();
+                login();
             }
 
             @Override
@@ -41,14 +50,13 @@ public class SplashLogoActivity extends AppCompatActivity {
         TedPermission.Builder tedPermission = TedPermission.with(getApplicationContext());
         tedPermission.setPermissionListener(permissionListener);
         tedPermission.setPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS
-                , Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS
-                , Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION);
-        tedPermission.setRationaleMessage("권한 허용");
+                , Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS);
+        tedPermission.setRationaleMessage("전화번호를 읽고, 문자 송수신을 위해서 이 권한이 필요합니다. ");
         tedPermission.setDeniedMessage("권한을 거부하시면 앱을 사용할 수 없습니다. [ 설정 ] -> [ 권한 ] 에서 다시 허용할 수 있습니다. ");
         tedPermission.check();
     }
 
-    private void next() {
+    private void login() {
         Manager.init(getApplicationContext());
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
@@ -62,14 +70,8 @@ public class SplashLogoActivity extends AppCompatActivity {
             startService(new Intent(getApplicationContext(), MainService.class));
         }
 
-//        Manager.checkNetworkMessage();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                startActivity(new Intent(getApplicationContext(), TutorialActivity.class));
-                finish();
-            }
-        }, 1800);
+        startActivity(new Intent(getApplicationContext(), TutorialActivity.class));
+        finish();
     }
 
     @Override
@@ -77,8 +79,7 @@ public class SplashLogoActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == Manager.REQUEST_CODE_FIREBASE_LOGIN) {
-            IdpResponse response = IdpResponse.fromResultIntent(data);
-
+//            IdpResponse response = IdpResponse.fromResultIntent(data);
             if (resultCode == RESULT_OK) {
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 Toast.makeText(getApplicationContext(), "UID: " + user.getUid(), Toast.LENGTH_SHORT).show();

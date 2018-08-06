@@ -78,6 +78,9 @@ public class ChatActivity extends AppCompatActivity {
 
                 ChatInfo chatInfo = new ChatInfo(message);
 
+//                if (message.toUpperCase().contains("SMS")) Manager.sendWithSMS(friendInfo, chatInfo);
+//                else if (message.toUpperCase().contains("NETWORK")) Manager.sendWithNetwork(friendInfo, chatInfo);
+//                else Manager.send(friendInfo, chatInfo);
                 Manager.send(friendInfo, chatInfo);
 
                 adapter.addItem(chatInfo).refresh();

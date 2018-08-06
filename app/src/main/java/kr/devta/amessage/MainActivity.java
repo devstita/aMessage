@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         adapter.clear();
         ArrayList<FriendInfo> previousFriendArrayList = Manager.readChatList();
-        Manager.print("PreviousFriendArrayList.size(): " + previousFriendArrayList.size());
+//        Manager.print("PreviousFriendArrayList.size(): " + previousFriendArrayList.size());
         for (FriendInfo friendInfo : previousFriendArrayList) {
             if (friendInfo != null) adapter.addItem(friendInfo);
             else Manager.print("Item: Null");

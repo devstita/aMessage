@@ -1,9 +1,11 @@
 package kr.devta.amessage;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,17 +16,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class MainService extends Service {
-    boolean threadFlag;
-
+    boolean repeatFlag;
     ChildEventListener childEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-            Manager.print("MainService (Network Chat Reader - Real Time): " + dataSnapshot.getKey() + ", " + dataSnapshot.getValue().toString());
+//            Manager.print("MainService (Network Chat Reader - Real Time): " + dataSnapshot.getKey() + ", " + dataSnapshot.getValue().toString());
             String key = dataSnapshot.getKey();
             String friendPhone = key.split(Manager.SEPARATOR)[0];
 //            long date = Long.valueOf(dataSnapshot.getValue().toString().split(Manager.DATE_SEPARATOR)[0]);
@@ -93,19 +92,32 @@ public class MainService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        threadFlag = true;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Manager.init(getApplicationContext());
+        repeatFlag = true;
         FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone(getApplicationContext())).addChildEventListener(childEventListener);
         Manager.print("MainService.onCreate() -> Database Init Successful");
+
+        /////////////////////////////////////////////
+        /// ||| Make impossible to task kill ||| ///
+        /////////////////////////////////////////////
+        Notification notification;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) notification = new Notification.Builder(getApplicationContext()).setContentTitle("aMessage").setContentText("aMessage is running").build();
+        else notification = new Notification();
+        startForeground(startId, notification);
+
+        /////////////////////////////////////////////
+        ////////////// ||| Run ||| //////////////////
+        /////////////////////////////////////////////
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Manager.print("Start MainService.Thread");
-                while (threadFlag) {
+                Manager.print("Start MainService.Thread, Flag: " + ((repeatFlag) ? "True" : "False"));
+
+                while (repeatFlag) {
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     DatabaseReference reference = database.getReference().child("Users");
 
@@ -124,13 +136,16 @@ public class MainService extends Service {
             }
         }).start();
 
-        return super.onStartCommand(intent, flags, startId);
+        return super.onStartCommand(intent, flags, startId); // < = > return 1
+//        START_STICKY ( = 1): 재시작 (intent = null)
+//        START_NOT_STICKY ( = 2): 재시작 안함
+//        START_REDELIVER_INTENT ( = 3): 재시작 (intent = 유지)
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        threadFlag = false;
+        repeatFlag = false;
         FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone(getApplicationContext())).removeEventListener(childEventListener);
         Manager.print("MainService.onDestroy() -> Database Destroy Successful");
     }

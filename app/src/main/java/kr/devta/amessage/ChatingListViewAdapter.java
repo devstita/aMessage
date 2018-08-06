@@ -2,6 +2,7 @@ package kr.devta.amessage;
 
 import android.content.Context;
 import android.support.constraint.ConstraintLayout;
+import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,8 @@ public class ChatingListViewAdapter extends BaseAdapter {
         int sender = ((items.get(position).getDateToLong() > 0) ? 1 : -1);
 
         chatTextView.setText(((sender == 1) ? "Me" : "You") + ": " + items.get(position).getMessage());
+        Linkify.addLinks(chatTextView, Linkify.ALL);
+        chatTextView.setLinksClickable(true);
         dateTextView.setText(items.get(position).getDateWithFormat());
 
         return layout;

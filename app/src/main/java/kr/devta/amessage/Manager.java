@@ -3,6 +3,7 @@ package kr.devta.amessage;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -12,36 +13,23 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
-import android.util.Base64;
-import android.util.Base64InputStream;
-import android.util.Base64OutputStream;
 import android.util.Log;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -51,7 +39,7 @@ public class Manager {
     private static Context context;
 
     public static void init(Context context) {
-        Manager.print("Manager.init()");
+//        Manager.print("Manager.init()");
         Manager.context = context;
 //        checkNetworkMessage();
     }
@@ -141,14 +129,14 @@ public class Manager {
         Set<String> keys = allDatas.keySet();
 
         for (String curKey : keys) {
-            Manager.print("CurKey: " + curKey);
+//            Manager.print("CurKey: " + curKey);
             String[] splitWithSeparator = curKey.split(Pattern.quote(Manager.KEY_CHAT_SENDER_SEPARATOR));
             String sender = (splitWithSeparator[0]);
             int senderInteger = (sender.equals(getMyPhone()) ? 1 : -1);
-            Manager.print("Sender: " + sender + ", SenderInt: " + senderInteger);
+//            Manager.print("Sender: " + sender + ", SenderInt: " + senderInteger);
             String dateStr = (splitWithSeparator[1]);
             long date = ((senderInteger == 1) ? Math.abs(Long.valueOf(dateStr)) : -Math.abs(Long.valueOf(dateStr)));
-            Manager.print("Add to ret: Message(" + allDatas.get(curKey).toString() + "), Date(" + date + ")");
+//            Manager.print("Add to ret: Message(" + allDatas.get(curKey).toString() + "), Date(" + date + ")");
             ret.add(new ChatInfo(allDatas.get(curKey).toString(), date));
         }
 
@@ -178,7 +166,7 @@ public class Manager {
                 chatIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+        Notification.Builder builder = new Notification.Builder(context)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(friendInfo.getName())
                 .setContentText(chatInfo.getMessage())
@@ -206,14 +194,14 @@ public class Manager {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() == null) {
-                    Manager.print("Friend is not in Database");
+//                    Manager.print("Friend is not in Database");
                     return;
                 }
                 String enableTime = dataSnapshot.getValue().toString();
                 long enableTimeToLong = Long.valueOf(enableTime);
                 long enableTimeDiff = Math.abs(Manager.getCurrentTimeMills() - enableTimeToLong);
 
-                Manager.print("EnableTimeDiff: " + enableTimeDiff);
+//                Manager.print("EnableTimeDiff: " + enableTimeDiff);
                 if (enableTimeDiff <= DIFF_OF_NETWORK_TIME) {
                     sendWithNetwork(friendInfo, chatInfo);
                 } else {
@@ -228,11 +216,11 @@ public class Manager {
         });
     }
 
-    private static void sendWithSMS(FriendInfo friendInfo, ChatInfo chatInfo) {
+    public static void sendWithSMS(FriendInfo friendInfo, ChatInfo chatInfo) {
         SmsManager.getDefault().sendTextMessage(friendInfo.getPhone(), null, chatInfo.getMessage(), null, null);
     }
 
-    private static void sendWithNetwork(final FriendInfo friendInfo, final ChatInfo chatInfo) {
+    public static void sendWithNetwork(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootReference = database.getReference();
 
@@ -253,7 +241,7 @@ public class Manager {
                 String message = chatInfo.getMessage();
 
                 destReference.child(curKey).setValue(date + (Manager.DATE_SEPARATOR) + message);
-                Manager.print("Send with Network: " + message);
+//                Manager.print("Send with Network: " + message);
             }
 
             @Override
@@ -305,7 +293,7 @@ public class Manager {
 
                 FriendInfo toAdd = new FriendInfo(name, phoneNumber);
                 ret.add(toAdd);
-                Manager.print("Contact Added Item: " + name + ", " + phoneNumber);
+//                Manager.print("Contact Added Item: " + name + ", " + phoneNumber);
             } while (contactCursor.moveToNext());
         }
 
