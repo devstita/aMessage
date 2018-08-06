@@ -18,7 +18,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:subtitle=" - Friend Phone Number"
-        app:title="FriendName" />
+        app:subtitleTextColor="#FFF"
+        app:title="FriendName"
+        app:titleTextColor="#FFF" />
 
     <ListView
         android:id="@+id/chat_ChatingListView"

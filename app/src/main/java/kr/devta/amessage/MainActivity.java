@@ -1,8 +1,10 @@
 package kr.devta.amessage;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,6 +40,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        chatListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
+                Intent intent = new Intent(getApplicationContext(), ChatSettingActivity.class);
+                intent.putExtra("FriendInfo", adapter.getItem(position));
+                startActivityForResult(intent, Manager.REQUEST_CODE_CHAT_SETTING);
+                return false;
+            }
+        });
+
         mainFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -49,10 +61,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        updateUI();
+    }
 
+    private void updateUI() {
         adapter.clear();
         ArrayList<FriendInfo> previousFriendArrayList = Manager.readChatList();
-//        Manager.print("PreviousFriendArrayList.size(): " + previousFriendArrayList.size());
         for (FriendInfo friendInfo : previousFriendArrayList) {
             if (friendInfo != null) adapter.addItem(friendInfo);
             else Manager.print("Item: Null");
@@ -73,6 +87,15 @@ public class MainActivity extends AppCompatActivity {
             adapter.refresh();
         } else if (requestCode == Manager.REQUEST_CODE_CHAT && resultCode == RESULT_OK) {
             FriendInfo friendInfo = (FriendInfo) data.getSerializableExtra("FriendInfo");
+        } else if (requestCode == Manager.REQUEST_CODE_CHAT_SETTING && resultCode == RESULT_OK) {
+            switch (data.getStringExtra("Action")) {
+                case "Remove":
+                case "ChangeName":
+                    updateUI();
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

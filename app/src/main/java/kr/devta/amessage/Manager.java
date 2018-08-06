@@ -10,12 +10,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -171,6 +171,9 @@ public class Manager {
                 .setContentTitle(friendInfo.getName())
                 .setContentText(chatInfo.getMessage())
                 .setContentIntent(pendingIntent)
+                .setSound(Uri.parse("android.resource://" + context.getPackageName() + "/" + R.raw.notification))
+                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000})
+                .setLights(Color.BLUE, 3000, 3000)
                 .setAutoCancel(true);
         notificationManager.notify(0, builder.build());
     }
@@ -216,11 +219,11 @@ public class Manager {
         });
     }
 
-    public static void sendWithSMS(FriendInfo friendInfo, ChatInfo chatInfo) {
+    private static void sendWithSMS(FriendInfo friendInfo, ChatInfo chatInfo) {
         SmsManager.getDefault().sendTextMessage(friendInfo.getPhone(), null, chatInfo.getMessage(), null, null);
     }
 
-    public static void sendWithNetwork(final FriendInfo friendInfo, final ChatInfo chatInfo) {
+    private static void sendWithNetwork(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootReference = database.getReference();
 

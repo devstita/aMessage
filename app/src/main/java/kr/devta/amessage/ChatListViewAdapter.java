@@ -25,7 +25,7 @@ public class ChatListViewAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public FriendInfo getItem(int position) {
         return items.get(position);
     }
 
