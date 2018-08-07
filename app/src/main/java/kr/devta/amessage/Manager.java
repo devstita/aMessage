@@ -172,7 +172,7 @@ public class Manager {
                 .setContentText(chatInfo.getMessage())
                 .setContentIntent(pendingIntent)
                 .setSound(Uri.parse("android.resource://" + context.getPackageName() + "/" + R.raw.notification))
-                .setVibrate(new long[]{1000, 1000, 1000, 1000, 1000})
+                .setVibrate(new long[]{0, 1000}) // [ 진동 전 대기시간, 진동시간 ] 반복
                 .setLights(Color.BLUE, 3000, 3000)
                 .setAutoCancel(true);
         notificationManager.notify(0, builder.build());

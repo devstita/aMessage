@@ -49,8 +49,8 @@ public class SplashLogoActivity extends AppCompatActivity {
         };
         TedPermission.Builder tedPermission = TedPermission.with(getApplicationContext());
         tedPermission.setPermissionListener(permissionListener);
-        tedPermission.setPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS
-                , Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS);
+        tedPermission.setPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS,
+                Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS);
         tedPermission.setRationaleMessage("전화번호를 읽고, 문자 송수신을 위해서 이 권한이 필요합니다. ");
         tedPermission.setDeniedMessage("권한을 거부하시면 앱을 사용할 수 없습니다. [ 설정 ] -> [ 권한 ] 에서 다시 허용할 수 있습니다. ");
         tedPermission.check();
