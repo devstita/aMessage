@@ -193,7 +193,7 @@ public class Manager {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootReference = database.getReference();
 
-        DatabaseReference friendStatusReference = rootReference.child("Users").child(friendInfo.getPhone());
+        DatabaseReference friendStatusReference = rootReference.child("Users").child(friendInfo.getPhone()).child("LastNetworkRequest");
         friendStatusReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

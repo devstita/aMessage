@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         chatListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                FriendInfo friendInfo = (FriendInfo) adapter.getItem(position);
+                FriendInfo friendInfo = adapter.getItem(position);
                 Intent chatIntent = new Intent(getApplicationContext(), ChatActivity.class);
                 chatIntent.putExtra("FriendInfo", friendInfo);
                 startActivityForResult(chatIntent, Manager.REQUEST_CODE_CHAT);

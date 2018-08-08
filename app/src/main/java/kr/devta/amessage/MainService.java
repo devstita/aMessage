@@ -124,7 +124,7 @@ public class MainService extends Service {
                     String phone = Manager.getMyPhone(getApplicationContext());
                     String date = String.valueOf(Manager.getCurrentTimeMills());
 
-                    reference.child(phone).setValue(date);
+                    reference.child(phone).child("LastNetworkRequest").setValue(date);
                     try {
                         Thread.currentThread().sleep(1000);
                     } catch (InterruptedException e) {

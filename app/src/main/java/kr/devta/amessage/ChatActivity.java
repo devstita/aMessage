@@ -2,6 +2,7 @@ package kr.devta.amessage;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -13,9 +14,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements Runnable {
     public static ActivityStatus status = null;
 
     Toolbar toolbar;
@@ -25,6 +31,7 @@ public class ChatActivity extends AppCompatActivity {
 
     FriendInfo friendInfo;
     public static ChatingListViewAdapter adapter;
+    Thread checkFriendNetworkThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +47,10 @@ public class ChatActivity extends AppCompatActivity {
 
         friendInfo = (FriendInfo) getIntent().getSerializableExtra("FriendInfo");
         adapter = new ChatingListViewAdapter(getApplicationContext(), friendInfo);
+        checkFriendNetworkThread = new Thread(this);
 
         toolbar.setTitle(friendInfo.getName());
-        toolbar.setSubtitle(" - " + friendInfo.getPhone());
+        toolbar.setSubtitle(" - " + String.valueOf(-1));
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
@@ -90,6 +98,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         status = ActivityStatus.RESUMED;
+        checkFriendNetworkThread.start();
 
         adapter.clear();
         ArrayList<ChatInfo> chats = Manager.readChat(friendInfo);
@@ -97,6 +106,19 @@ public class ChatActivity extends AppCompatActivity {
             adapter.addItem(chat);
         }
         adapter.refresh();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        status = ActivityStatus.PAUSED;
+        checkFriendNetworkThread.interrupt();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        status = ActivityStatus.DESTROYED;
     }
 
     @Override
@@ -125,18 +147,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        status = ActivityStatus.PAUSED;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        status = ActivityStatus.DESTROYED;
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -151,6 +161,62 @@ public class ChatActivity extends AppCompatActivity {
                     break;
                 default:
                     break;
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            if (Thread.interrupted()) break;
+            FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+            firebaseDatabase.getReference().child("Users").child(friendInfo.getPhone()).child("LastAppOpen").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    long myCurrentTime = Manager.getCurrentTimeMills();
+                    long friendLastAppOpen = Long.valueOf(dataSnapshot.getValue().toString());
+                    long diffMillis = myCurrentTime - friendLastAppOpen;
+                    long diff = diffMillis / 1000;
+                    String connectingMessage;
+
+                    /*
+                     1 second: 1 second
+                     1 minute: 60 second
+                     1 hour = 3600 second
+                     1 day = 43200 second
+                     */
+
+                    long day = 0, hour = 0, minute = 0, second = diff;
+                    while (second >= 60) {
+                        if (second >= 43200) {
+                            day++;
+                            second -= 43200;
+                        } else if (second >= 3600) {
+                            hour++;
+                            second -= 3600;
+                        } else if (second >= 60) {
+                            minute++;
+                            second -= 60;
+                        }
+                    }
+
+                    if (day > 0) connectingMessage = (String.valueOf(day) + " 일 전 접속");
+                    else if (hour > 0) connectingMessage = (String.valueOf(hour) + " 시간 전 접속");
+                    else if (minute > 0) connectingMessage = (String.valueOf(minute) + " 분 전 접속");
+                    else connectingMessage = "현재 접속중..";
+
+                    toolbar.setSubtitle(" - " + connectingMessage);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
