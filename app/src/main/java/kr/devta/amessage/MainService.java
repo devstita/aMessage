@@ -1,6 +1,8 @@
 package kr.devta.amessage;
 
+import android.app.Application;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
@@ -16,6 +18,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class MainService extends Service {
@@ -104,10 +107,23 @@ public class MainService extends Service {
         /////////////////////////////////////////////
         /// ||| Make impossible to task kill ||| ///
         /////////////////////////////////////////////
-        Notification notification;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) notification = new Notification.Builder(getApplicationContext()).setContentTitle("aMessage").setContentText("aMessage is running").build();
-        else notification = new Notification();
-        startForeground(startId, notification);
+        Notification.Builder notificationBuilder;
+        notificationBuilder = new Notification.Builder(getApplicationContext()).
+                setContentTitle("aMessage").
+                setContentText("aMessage is running").
+                setSmallIcon(R.mipmap.ic_launcher);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).getBoolean(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, false)) {
+                notificationManager.createNotificationChannel(new NotificationChannel(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH));
+                Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).edit().putBoolean(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, true).apply();
+            }
+            notificationBuilder.setChannelId(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID);
+        }
+
+
+        startForeground(startId, notificationBuilder.build());
 
         /////////////////////////////////////////////
         ////////////// ||| Run ||| //////////////////
@@ -126,7 +142,7 @@ public class MainService extends Service {
 
                     reference.child(phone).child("LastNetworkRequest").setValue(date);
                     try {
-                        Thread.currentThread().sleep(1000);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

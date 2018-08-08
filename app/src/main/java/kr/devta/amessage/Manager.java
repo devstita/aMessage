@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -14,6 +15,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.telephony.SmsManager;
@@ -60,6 +62,8 @@ public class Manager {
 
     public static final String NAME_CHAT_SEPARATOR = "[$ NAME_CHAT $]";
     public static final String KEY_CHAT_SENDER_SEPARATOR = "$"; // $: Expression Symbol, \\$: String Symbol ( = java.util.regex.Pattern.quote("$")
+
+    public static final String NAME_NOTIFICATION_CHANNEL = "Name_NotificationChannel";
 
     public static SharedPreferences getSharedPreferences(String name) {
         return Manager.context.getSharedPreferences(name, Context.MODE_PRIVATE);
@@ -176,6 +180,15 @@ public class Manager {
                 .setVibrate(new long[]{0, 1000}) // [ 진동 전 대기시간, 진동시간 ] 반복
                 .setLights(Color.BLUE, 3000, 3000)
                 .setAutoCancel(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).getBoolean(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, false)) {
+                notificationManager.createNotificationChannel(new NotificationChannel(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, MESSAGE_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH));
+                Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).edit().putBoolean(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, true).apply();
+            }
+            builder.setChannelId(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID);
+        }
+
         notificationManager.notify(0, builder.build());
     }
 
@@ -311,6 +324,12 @@ public class Manager {
 
     public static final int CIPHER_OF_DATE = 13;
 
+    public static final String MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID = "백그라운드 작동 알림 채널_ID";
+    public static final String MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_NAME = "백그라운드 작동 알림 채널";
+
+    public static final String MESSAGE_NOTIFICATION_CHANNEL_ID = "메세지 알림 채널_ID";
+    public static final String MESSAGE_NOTIFICATION_CHANNEL_NAME = "메세지 알림 채널";
+
     public static void print(String m) {
         Log.d("AMESSAGE_DEBUG", m);
     }
@@ -342,4 +361,5 @@ public class Manager {
     public static NullPointerException getNullPointerException(String m) {
         return new NullPointerException(m);
     }
+
 }
