@@ -19,6 +19,7 @@ import android.support.annotation.NonNull;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -197,7 +198,8 @@ public class Manager {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() == null) {
-//                    Manager.print("Friend is not in Database");
+                    Toast.makeText(context, "Friend is not in Database", Toast.LENGTH_SHORT).show();
+                    sendWithSMS(friendInfo, chatInfo);
                     return;
                 }
                 String enableTime = dataSnapshot.getValue().toString();
