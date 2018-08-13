@@ -2,10 +2,10 @@ apply plugin: 'com.android.application'
 
 android {
     signingConfigs {
-        devstita {
+        amessage_keystore {
             keyAlias 'devstita'
             keyPassword 'devstita'
-            storeFile file('D:/Programming/Android/Keystore/devstita.jks')
+            storeFile file('amessage.keystore')
             storePassword 'devstita'
         }
     }
@@ -22,10 +22,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.devstita
+            signingConfig signingConfigs.amessage_keystore
         }
         debug {
-            signingConfig signingConfigs.devstita
+            signingConfig signingConfigs.amessage_keystore
         }
     }
 }
