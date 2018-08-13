@@ -1,6 +1,5 @@
 package kr.devta.amessage;
 
-import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,7 +17,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class MainService extends Service {
@@ -139,9 +137,12 @@ public class MainService extends Service {
                     String phone = Manager.getMyPhone(getApplicationContext());
                     String date = String.valueOf(Manager.getCurrentTimeMills());
 
+                    double sendDataSize = (8 * date.getBytes().length) + (8 * date.getBytes().length); // String size -> MB
+
                     reference.child(phone).setValue(date);
+//                    Manager.print("Size (Byte): " + sendDataSize);
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(Manager.NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

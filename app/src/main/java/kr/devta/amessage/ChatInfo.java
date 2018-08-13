@@ -41,10 +41,12 @@ public class ChatInfo implements Serializable {
         return date;
     }
     public String getDateWithFormat() {
-        String apm = new SimpleDateFormat("a", Locale.US).format(getDate());
+        String month = new SimpleDateFormat("M").format(getDate());
+        String day = new SimpleDateFormat("d").format(getDate());
+        String ampm = new SimpleDateFormat("a", Locale.US).format(getDate());
         String hour = new SimpleDateFormat("hh", Locale.US).format(getDate());
         String minute = new SimpleDateFormat("mm", Locale.US).format(getDate());
 
-        return (apm + " " + hour + ":" + minute);
+        return (month + "월 " + day + "일 " + ampm + " " + hour + ":" + minute);
     }
 }

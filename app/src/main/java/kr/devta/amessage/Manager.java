@@ -10,6 +10,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -20,6 +23,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -29,6 +33,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -181,18 +187,18 @@ public class Manager {
                 .setAutoCancel(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).getBoolean(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, false)) {
-                notificationManager.createNotificationChannel(new NotificationChannel(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, MESSAGE_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH));
-                Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).edit().putBoolean(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, true).apply();
+            if (Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).getBoolean(Manager.MESSAGE_NOTIFICATION_CHANNEL_ID, false)) {
+                notificationManager.createNotificationChannel(new NotificationChannel(Manager.MESSAGE_NOTIFICATION_CHANNEL_ID, MESSAGE_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH));
+                Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).edit().putBoolean(Manager.MESSAGE_NOTIFICATION_CHANNEL_ID, true).apply();
             }
-            builder.setChannelId(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID);
+            builder.setChannelId(Manager.MESSAGE_NOTIFICATION_CHANNEL_ID);
         }
 
         notificationManager.notify(0, builder.build());
     }
 
 //    Networking And SMS
-    private static final int DIFF_OF_NETWORK_TIME = 800;
+    public static final int NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME = 400;
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
@@ -218,8 +224,8 @@ public class Manager {
                 long enableTimeToLong = Long.valueOf(enableTime);
                 long enableTimeDiff = Math.abs(Manager.getCurrentTimeMills() - enableTimeToLong);
 
-//                Manager.print("EnableTimeDiff: " + enableTimeDiff);
-                if (enableTimeDiff <= DIFF_OF_NETWORK_TIME) {
+                Manager.print("EnableTimeDiff: " + enableTimeDiff);
+                if (enableTimeDiff <= NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME) {
                     sendWithNetwork(friendInfo, chatInfo);
                 } else {
                     sendWithSMS(friendInfo, chatInfo);
@@ -282,8 +288,8 @@ public class Manager {
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         phone = telephonyManager.getLine1Number();
 
-        phone.replace("+82", "0");
-        if (phone.startsWith("82")) phone.replace("82", "");
+        phone = phone.replace("+82", "0");
+        if (phone.startsWith("82")) phone = phone.replace("82", "");
 
         return phone;
     }
@@ -356,11 +362,40 @@ public class Manager {
                 || (mobile.isAvailable() && mobile.isConnectedOrConnecting()));
     }
 
+    public static boolean checkVersionIsLast(String versionName) {
+        return (getVersionName().equals(versionName));
+    }
+
+    public static int getVersionCode() {
+        PackageInfo packageInfo;
+
+        try{
+            packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        }catch (PackageManager.NameNotFoundException e){
+            e.printStackTrace();
+            return 0;
+        }
+
+        return packageInfo.versionCode;
+    }
+
+    public static String getVersionName() {
+        PackageInfo packageInfo;
+
+        try{
+            packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        }catch (PackageManager.NameNotFoundException e){
+            e.printStackTrace();
+            return "NONE";
+        }
+
+        return packageInfo.versionName;
+    }
+
     public static NullPointerException getNullPointerException() {
         return new NullPointerException("Manager.context is null");
     }
     public static NullPointerException getNullPointerException(String m) {
         return new NullPointerException(m);
     }
-
 }

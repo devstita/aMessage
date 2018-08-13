@@ -67,7 +67,7 @@ public class SplashLogoActivity extends AppCompatActivity {
             FirebaseDatabase.getInstance().getReference().child("Management").child("Version").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.getValue().toString().equals(Manager.VERSION)) { // Check My Version is last
+                    if (Manager.checkVersionIsLast(dataSnapshot.getValue().toString())) { // Check My Version is last
                         Manager.print("Version: " + Manager.VERSION + ", Last Version..!!");
                         login();
                     } else {
