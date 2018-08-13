@@ -122,7 +122,6 @@ public class MainService extends Service {
             notificationBuilder.setChannelId(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID);
         }
 
-
         startForeground(startId, notificationBuilder.build());
 
         /////////////////////////////////////////////
@@ -140,7 +139,7 @@ public class MainService extends Service {
                     String phone = Manager.getMyPhone(getApplicationContext());
                     String date = String.valueOf(Manager.getCurrentTimeMills());
 
-                    reference.child(phone).child("LastNetworkRequest").setValue(date);
+                    reference.child(phone).setValue(date);
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
