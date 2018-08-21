@@ -25,6 +25,7 @@ public class AddChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_chat);
+        Manager.showActivityName(this);
 
         nameEditText = findViewById(R.id.addChat_NameEditText);
         phoneEditText = findViewById(R.id.addChat_PhoneEditText);

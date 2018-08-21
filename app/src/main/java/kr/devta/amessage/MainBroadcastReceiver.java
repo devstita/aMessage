@@ -59,12 +59,16 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
                 ChatInfo chatInfo = new ChatInfo(message, -time);
 
                 boolean actived = false;
-                if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) // Activity is Running
-                    if (ChatActivity.adapter != null)
+                if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) {
+                    if (ChatActivity.adapter != null) {
                         if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
                             ChatActivity.adapter.addItem(chatInfo).refresh();
                             actived = true;
                         }
+                    }
+                } else if (MainActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) {
+                    MainActivity.updateUI();
+                }
                 Manager.addChat(-1, friendInfo, chatInfo, actived);
             }
         }

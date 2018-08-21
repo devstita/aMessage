@@ -13,16 +13,20 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    public static ActivityStatus status = null;
+
     ListView chatListView;
     FloatingActionButton mainFloatingActionButton;
 
-    ChatListViewAdapter adapter;
+    private static ChatListViewAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Manager.showActivityName(this);
+
+        status = ActivityStatus.CREATED;
 
         chatListView = findViewById(R.id.main_ChatListView);
         mainFloatingActionButton = findViewById(R.id.main_MainFloatingActionButton);
@@ -61,10 +65,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        status = ActivityStatus.RESUMED;
         updateUI();
     }
 
-    private void updateUI() {
+    @Override
+    protected void onPause() {
+        super.onPause();
+        status = ActivityStatus.PAUSED;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        status = ActivityStatus.DESTROYED;
+    }
+
+    public static void updateUI() {
         adapter.clear();
         ArrayList<FriendInfo> previousFriendArrayList = Manager.readChatList();
         for (FriendInfo friendInfo : previousFriendArrayList) {

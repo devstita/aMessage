@@ -54,11 +54,14 @@ public class MainService extends Service {
             }
 
             boolean actived = false;
-            if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED))
+            if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) {
                 if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
                     ChatActivity.adapter.addItem(chatInfo).refresh();
                     actived = true;
                 }
+            } else if (MainActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) {
+                MainActivity.updateUI();
+            }
             Manager.addChat(-1, friendInfo, chatInfo, actived);
             FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone(MainService.this.getApplicationContext())).child(dataSnapshot.getKey()).removeValue();
         }
@@ -137,10 +140,7 @@ public class MainService extends Service {
                     String phone = Manager.getMyPhone(getApplicationContext());
                     String date = String.valueOf(Manager.getCurrentTimeMills());
 
-                    double sendDataSize = (8 * date.getBytes().length) + (8 * date.getBytes().length); // String size -> MB
-
                     reference.child(phone).setValue(date);
-//                    Manager.print("Size (Byte): " + sendDataSize);
                     try {
                         Thread.sleep(Manager.NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME);
                     } catch (InterruptedException e) {
