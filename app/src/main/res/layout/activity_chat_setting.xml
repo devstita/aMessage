@@ -4,7 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ChatSettingActivity">
+    tools:context=".ChatSettingActivity"
+    android:background="@color/backgroundColor">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/chatSetting_Toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:title="친구 변경"
+        app:titleTextColor="@color/title" />
 
     <EditText
         android:id="@+id/chatSetting_ChangeFriendNameEditText"
@@ -41,6 +55,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/chatSetting_ChangeFriendNameEditText"
         app:layout_constraintStart_toStartOf="@+id/chatSetting_ChangeFriendNameEditText"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/chatSetting_Toolbar" />
 
 </android.support.constraint.ConstraintLayout>

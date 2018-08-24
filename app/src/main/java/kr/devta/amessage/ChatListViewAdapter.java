@@ -2,6 +2,7 @@ package kr.devta.amessage;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -49,11 +50,11 @@ public class ChatListViewAdapter extends BaseAdapter {
         if (chat.equals(Manager.NONE)) chat = "";
 
         nameTextView.setText(name);
-        nameTextView.setTextColor(Color.BLACK);
+        nameTextView.setTextColor(ContextCompat.getColor(context, R.color.title));
         nameTextView.setTextSize(25);
 
         chatTextView.setText(((sender == 1) ? "Me" : "You") + ": " + chat);
-        chatTextView.setTextColor(Color.BLACK);
+        chatTextView.setTextColor(ContextCompat.getColor(context, R.color.title));
         chatTextView.setTextSize(18);
 
         layout.addView(nameTextView);

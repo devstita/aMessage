@@ -5,7 +5,8 @@
     android:id="@+id/chat_Root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ChatActivity">
+    tools:context=".ChatActivity"
+    android:background="@color/backgroundColor">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/chat_Toolbar"
@@ -18,9 +19,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:subtitle=" - Friend Phone Number"
-        app:subtitleTextColor="#FFF"
+        app:subtitleTextColor="@color/subtitle"
         app:title="FriendName"
-        app:titleTextColor="#FFF" />
+        app:titleTextColor="@color/title" />
 
     <ListView
         android:id="@+id/chat_ChatingListView"

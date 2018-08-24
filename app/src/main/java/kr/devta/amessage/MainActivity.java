@@ -1,11 +1,10 @@
 package kr.devta.amessage;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -15,6 +14,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     public static ActivityStatus status = null;
 
+    Toolbar toolbar;
     ListView chatListView;
     FloatingActionButton mainFloatingActionButton;
 
@@ -28,10 +28,13 @@ public class MainActivity extends AppCompatActivity {
 
         status = ActivityStatus.CREATED;
 
+        toolbar = findViewById(R.id.main_Toolbar);
         chatListView = findViewById(R.id.main_ChatListView);
         mainFloatingActionButton = findViewById(R.id.main_MainFloatingActionButton);
 
         adapter = new ChatListViewAdapter(getApplicationContext());
+
+        setSupportActionBar(toolbar);
 
         chatListView.setAdapter(adapter);
         chatListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
