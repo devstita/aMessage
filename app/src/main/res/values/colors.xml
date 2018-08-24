@@ -4,9 +4,6 @@
     <!--<color name="colorPrimaryDark">#303F9F</color>-->
     <!--<color name="colorAccent">#FF4081</color>-->
 
-    <color name="black">#000</color>
-    <color name="white">#FFF</color>
-
     <color name="colorPrimary">#232323</color>
     <color name="colorPrimaryDark">#212121</color>
     <color name="colorAccent">#FF545454</color>
