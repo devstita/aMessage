@@ -43,7 +43,7 @@
         android:text="Remove Chating"
         app:layout_constraintEnd_toEndOf="@+id/chatSetting_ChangeFriendNameEditText"
         app:layout_constraintStart_toStartOf="@+id/chatSetting_ChangeFriendNameEditText"
-        app:layout_constraintTop_toBottomOf="@+id/chatSetting_ChangeFriendNameButton" />
+        app:layout_constraintTop_toBottomOf="@+id/chatSetting_ChangeFriendNameButton"/>
 
     <Button
         android:id="@+id/chatSetting_ChangeFriendNameButton"
@@ -51,7 +51,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        android:text="Change Friend Name"
+        android:text="친구 이름 변경"
+        android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/chatSetting_ChangeFriendNameEditText"
         app:layout_constraintStart_toStartOf="@+id/chatSetting_ChangeFriendNameEditText"
