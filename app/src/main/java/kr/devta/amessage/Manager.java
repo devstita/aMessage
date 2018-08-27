@@ -282,6 +282,13 @@ public class Manager {
         return false;
     }
 
+    public static boolean isServiceRunning(Context context, Class<?> sc) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE))
+            if (sc.getName().equals(serviceInfo.service.getClassName())) return true;
+        return false;
+    }
+
     @SuppressLint("MissingPermission")
     public static String getMyPhone(Context context) {
         String phone;

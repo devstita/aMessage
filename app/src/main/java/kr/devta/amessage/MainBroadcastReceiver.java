@@ -12,7 +12,7 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // TODO: This method is called when the BroadcastReceiver is receiving
+        // TODO_NONE: This method is called when the BroadcastReceiver is receiving
         // an Intent broadcast.
         // throw new UnsupportedOperationException("Not yet implemented");
 
@@ -20,9 +20,10 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
         Manager.init(context);
 
         if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
-            if (!Manager.isServiceRunning(MainService.class)) context.startService(new Intent(context, MainService.class));
+            if (!Manager.isServiceRunning(context, MainService.class)) context.startService(new Intent(context, MainService.class));
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
 //            Manager.print("He's coming..!!!!");
+            if (!Manager.isServiceRunning(context, MainService.class)) context.startService(new Intent(context, MainService.class));
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
                 Object[] messages = (Object[]) bundle.get("pdus");
