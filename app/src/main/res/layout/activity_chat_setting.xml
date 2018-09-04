@@ -31,6 +31,8 @@
         android:ems="10"
         android:hint="Friend Name"
         android:inputType="text"
+        android:textColor="@color/text"
+        android:textColorHint="@color/greyText"
         app:layout_constraintBottom_toTopOf="@+id/chatSetting_ChangeFriendNameButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

@@ -12,7 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.Signature;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -23,9 +23,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
-import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,8 +31,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +56,10 @@ public class Manager {
     public static final int REQUEST_CODE_CONTACT_INTENT = 1002;
     public static final int REQUEST_CODE_CHAT = 1003;
     public static final int REQUEST_CODE_CHAT_SETTING = 1004;
+
+//    Thread Flag
+    public static boolean chatAcitivtyCheckNetworkThreadFlag = true;
+    public static boolean mainServiceUpdateTimeThreadFlag = true;
 
 //    SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";
@@ -198,43 +200,18 @@ public class Manager {
     }
 
 //    Networking And SMS
-    public static final int NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME = 400;
+    public static final int NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME = 1000;
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
-        boolean myNetworkStatus = checkNetworkConnect();
-        if (!myNetworkStatus) {
-            sendWithSMS(friendInfo, chatInfo);
-            return;
-        }
-
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference rootReference = database.getReference();
-
-        DatabaseReference friendStatusReference = rootReference.child("Users").child(friendInfo.getPhone());
-        friendStatusReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        checkFriendNetwork(friendInfo, new ToDoAfterCheckNetworking() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getValue() == null) {
-                    Toast.makeText(context, "Friend is not in Database", Toast.LENGTH_SHORT).show();
-                    sendWithSMS(friendInfo, chatInfo);
-                    return;
-                }
-                String enableTime = dataSnapshot.getValue().toString();
-                long enableTimeToLong = Long.valueOf(enableTime);
-                long enableTimeDiff = Math.abs(Manager.getCurrentTimeMills() - enableTimeToLong);
-
-                Manager.print("EnableTimeDiff: " + enableTimeDiff);
-                if (enableTimeDiff <= NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME) {
+            public void run(boolean status) {
+                if (status) {
                     sendWithNetwork(friendInfo, chatInfo);
                 } else {
                     sendWithSMS(friendInfo, chatInfo);
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                sendWithSMS(friendInfo, chatInfo);
             }
         });
     }
@@ -272,6 +249,48 @@ public class Manager {
                 sendWithSMS(friendInfo, chatInfo);
             }
         });
+    }
+
+    public static void checkFriendNetwork(FriendInfo friendInfo, @NonNull final ToDoAfterCheckNetworking method) {
+        if (!checkNetworkConnect()) {
+            Manager.print("Your Network is Disconnected");
+            method.run(false);
+        } else {
+            DatabaseReference friendStatusReference = FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone());
+            friendStatusReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    boolean networkStatus;
+
+                    if (dataSnapshot.getValue() == null) { // NO REGISTERED
+                        Manager.print("Friend is NOT Registered");
+                        networkStatus = false;
+                    } else {
+                        long enableTimeDiff = Math.abs(Manager.getCurrentTimeMills() - Long.valueOf(dataSnapshot.getValue().toString()));
+                        Manager.print("Enable Time Diff: " + enableTimeDiff);
+                        if (enableTimeDiff <= NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME) { // Network is Connected
+                            Manager.print("Friend is Connected");
+                            networkStatus = true;
+                        } else { // Network is NOT Connected
+                            Manager.print("Friend is NOT Connected");
+                            networkStatus = false;
+                        }
+                    }
+
+                    method.run(networkStatus);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    @FunctionalInterface
+    public interface ToDoAfterCheckNetworking {
+        void run(boolean status);
     }
 
 //    Utility Method

@@ -1,6 +1,7 @@
 package kr.devta.amessage;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.constraint.ConstraintLayout;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
@@ -45,6 +46,14 @@ public class ChatingListViewAdapter extends BaseAdapter {
         TextView chatTextView = layout.findViewById(R.id.chatingListViewItem_ChatTextView);
         TextView dateTextView = layout.findViewById(R.id.chatingListViewItem_DateTextView);
         int sender = ((items.get(position).getDateToLong() > 0) ? 1 : -1);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            chatTextView.setTextColor(context.getResources().getColor(R.color.text));
+            dateTextView.setTextColor(context.getResources().getColor(R.color.text));
+        } else {
+            chatTextView.setTextColor(context.getResources().getColor(R.color.text, context.getTheme()));
+            dateTextView.setTextColor(context.getResources().getColor(R.color.text, context.getTheme()));
+        }
 
         chatTextView.setText(((sender == 1) ? "Me" : "You") + ": " + items.get(position).getMessage());
         Linkify.addLinks(chatTextView, Linkify.ALL);

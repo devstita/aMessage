@@ -20,7 +20,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 
 public class MainService extends Service {
-    boolean repeatFlag;
     ChildEventListener childEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -101,18 +100,14 @@ public class MainService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Manager.init(getApplicationContext());
-        repeatFlag = true;
+        Manager.mainServiceUpdateTimeThreadFlag = true;
         FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone(getApplicationContext())).addChildEventListener(childEventListener);
         Manager.print("MainService.onCreate() -> Database Init Successful");
 
         /////////////////////////////////////////////
         /// ||| Make impossible to task kill ||| ///
         /////////////////////////////////////////////
-        Notification.Builder notificationBuilder;
-        notificationBuilder = new Notification.Builder(getApplicationContext()).
-                setContentTitle("aMessage").
-                setContentText("aMessage is running").
-                setSmallIcon(R.mipmap.ic_launcher);
+        Notification.Builder notificationBuilder = new Notification.Builder(getApplicationContext());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -131,9 +126,9 @@ public class MainService extends Service {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Manager.print("Start MainService.Thread, Flag: " + ((repeatFlag) ? "True" : "False"));
+                Manager.print("Start MainService.Thread, Flag: " + ((Manager.mainServiceUpdateTimeThreadFlag) ? "True" : "False"));
 
-                while (repeatFlag) {
+                while (Manager.mainServiceUpdateTimeThreadFlag) {
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     DatabaseReference reference = database.getReference().child("Users");
 
@@ -161,7 +156,7 @@ public class MainService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        repeatFlag = false;
+        Manager.mainServiceUpdateTimeThreadFlag = false;
         FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone(getApplicationContext())).removeEventListener(childEventListener);
         Manager.print("MainService.onDestroy() -> Database Destroy Successful");
     }

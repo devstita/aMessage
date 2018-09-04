@@ -18,8 +18,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends AppCompatActivity implements Runnable {
     public static ActivityStatus status = null;
+    private Thread checkNetworkThread = null;
 
     Toolbar toolbar;
     ListView chatingListView;
@@ -36,6 +37,7 @@ public class ChatActivity extends AppCompatActivity {
         Manager.showActivityName(this);
 
         status = ActivityStatus.CREATED;
+        checkNetworkThread = new Thread(this);
 
         toolbar = findViewById(R.id.chat_Toolbar);
         chatingListView = findViewById(R.id.chat_ChatingListView);
@@ -44,6 +46,8 @@ public class ChatActivity extends AppCompatActivity {
 
         friendInfo = (FriendInfo) getIntent().getSerializableExtra("FriendInfo");
         adapter = new ChatingListViewAdapter(getApplicationContext(), friendInfo);
+
+        checkNetworkThread.start();
 
         toolbar.setTitle(friendInfo.getName());
         toolbar.setSubtitle(" - " + friendInfo.getPhone());
@@ -99,7 +103,11 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         status = ActivityStatus.RESUMED;
+        if (checkNetworkThread == null) checkNetworkThread = new Thread(this);
+        Manager.chatAcitivtyCheckNetworkThreadFlag = true;
+        if (checkNetworkThread.getState() == Thread.State.NEW) checkNetworkThread.start();
 
         adapter.clear();
         ArrayList<ChatInfo> chats = Manager.readChat(friendInfo);
@@ -112,7 +120,9 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+
         status = ActivityStatus.PAUSED;
+        Manager.chatAcitivtyCheckNetworkThreadFlag = false;
     }
 
     @Override
@@ -163,5 +173,28 @@ public class ChatActivity extends AppCompatActivity {
                     break;
             }
         }
+    }
+
+    @Override
+    public void run() {
+        while (Manager.chatAcitivtyCheckNetworkThreadFlag) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Manager.checkFriendNetwork(friendInfo, new Manager.ToDoAfterCheckNetworking() {
+                @Override
+                public void run(final boolean status) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송");
+                        }
+                    });
+                }
+            });
+        }
+        Manager.chatAcitivtyCheckNetworkThreadFlag = true;
     }
 }

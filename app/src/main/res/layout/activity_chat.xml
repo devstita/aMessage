@@ -51,8 +51,10 @@
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:ems="10"
-        android:hint="Message"
+        android:hint="메시지 입력"
         android:maxLength="40"
+        android:textColor="@color/text"
+        android:textColorHint="@color/greyText"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/chat_SendButton"
         app:layout_constraintStart_toStartOf="parent" />
