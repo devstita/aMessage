@@ -350,8 +350,6 @@ public class Manager {
     }
 
 //        Etc Method And Variable
-    public static final String VERSION = "1.0B";
-
     public static final String NONE = "[$ NONE $]";
     public static final String SEPARATOR = "_";
 

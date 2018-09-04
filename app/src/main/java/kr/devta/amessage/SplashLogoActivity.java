@@ -68,7 +68,7 @@ public class SplashLogoActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (Manager.checkVersionIsLast(dataSnapshot.getValue().toString())) { // Check My Version is last
-                        Manager.print("Version: " + Manager.VERSION + ", Last Version..!!");
+                        Manager.print("Version: " + Manager.getVersionName() + ", Last Version..!!");
                         login();
                     } else {
                         Toast.makeText(getApplicationContext(), "최신버전 아님,,", Toast.LENGTH_SHORT).show();
