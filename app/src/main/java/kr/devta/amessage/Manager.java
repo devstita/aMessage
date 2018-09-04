@@ -200,7 +200,7 @@ public class Manager {
     }
 
 //    Networking And SMS
-    public static final int NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME = 1000;
+    public static final int NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME = 400;
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
@@ -268,7 +268,7 @@ public class Manager {
                     } else {
                         long enableTimeDiff = Math.abs(Manager.getCurrentTimeMills() - Long.valueOf(dataSnapshot.getValue().toString()));
                         Manager.print("Enable Time Diff: " + enableTimeDiff);
-                        if (enableTimeDiff <= NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME) { // Network is Connected
+                        if (enableTimeDiff <= (NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME * 2)) { // Network is Connected
                             Manager.print("Friend is Connected");
                             networkStatus = true;
                         } else { // Network is NOT Connected

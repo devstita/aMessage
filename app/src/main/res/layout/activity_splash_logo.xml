@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SplashLogoActivity">
+    tools:context=".SplashLogoActivity"
+    android:background="@color/backgroundColor">
 
     <ImageView
         android:id="@+id/splachlogo_LogoImageView"
