@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Manager.showActivityName(this);
+        Manager.initActivity(this);
 
         status = ActivityStatus.CREATED;
 

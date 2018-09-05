@@ -29,22 +29,29 @@ public class SplashLogoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_logo);
-        Manager.showActivityName(this);
         Manager.init(getApplicationContext());
+        this.getIntent().putExtra("CheckUpdate", false);
+        Manager.initActivity(this);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                checkPermission();
+        Manager.checkUpdate((status) -> {
+            if (status) new Handler().postDelayed(this :: checkPermission, 1800);
+            else {
             }
-        }, 1800);
+        });
+
     }
 
     private void checkPermission() {
         PermissionListener permissionListener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
-                checkVersion();
+                Manager.checkUpdate((status) -> {
+                    if (status) {
+                        login();
+                    } else {
+                        finish();
+                    }
+                });
             }
 
             @Override
@@ -60,28 +67,6 @@ public class SplashLogoActivity extends AppCompatActivity {
         tedPermission.setRationaleMessage("전화번호를 읽고, 문자 송수신을 위해서 이 권한이 필요합니다. ");
         tedPermission.setDeniedMessage("권한을 거부하시면 앱을 사용할 수 없습니다. [ 설정 ] -> [ 권한 ] 에서 다시 허용할 수 있습니다. ");
         tedPermission.check();
-    }
-
-    private void checkVersion() {
-        if (Manager.checkNetworkConnect()) {
-            FirebaseDatabase.getInstance().getReference().child("Management").child("Version").addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (Manager.checkVersionIsLast(dataSnapshot.getValue().toString())) { // Check My Version is last
-                        Manager.print("Version: " + Manager.getVersionName() + ", Last Version..!!");
-                        login();
-                    } else {
-                        Toast.makeText(getApplicationContext(), "최신버전 아님,,", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-        }
     }
 
     private void login() {

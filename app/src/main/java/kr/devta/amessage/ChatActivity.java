@@ -34,7 +34,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        Manager.showActivityName(this);
+        Manager.initActivity(this);
 
         status = ActivityStatus.CREATED;
         checkNetworkThread = new Thread(this);
@@ -183,17 +183,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            Manager.checkFriendNetwork(friendInfo, new Manager.ToDoAfterCheckNetworking() {
-                @Override
-                public void run(final boolean status) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송");
-                        }
-                    });
-                }
-            });
+            Manager.checkFriendNetwork(friendInfo, status -> runOnUiThread(() -> messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송")));
         }
         Manager.chatAcitivtyCheckNetworkThreadFlag = true;
     }

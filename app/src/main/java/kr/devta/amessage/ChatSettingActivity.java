@@ -22,7 +22,7 @@ public class ChatSettingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_setting);
-        Manager.showActivityName(this);
+        Manager.initActivity(this);
 
         changeFriendNameEditText = findViewById(R.id.chatSetting_ChangeFriendNameEditText);
         removeChatingButton = findViewById(R.id.chatSetting_RemoveChatingButton);

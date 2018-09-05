@@ -51,7 +51,7 @@
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:ems="10"
-        android:hint="메시지 입력"
+        android:hint="SMS 로 전송"
         android:maxLength="40"
         android:textColor="@color/text"
         android:textColorHint="@color/greyText"

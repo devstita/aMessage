@@ -13,7 +13,7 @@ public class TutorialActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tutorial);
-        Manager.showActivityName(this);
+        Manager.initActivity(this);
 
         skipTutorialButton = findViewById(R.id.tutorial_SkipTutorialButton);
 

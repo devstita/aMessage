@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -31,8 +30,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -121,14 +118,11 @@ public class Manager {
             ret.add(new FriendInfo(allDatas.get(curKey).toString(), curKey));
         }
 
-        Collections.sort(ret, new Comparator<FriendInfo>() {
-            @Override
-            public int compare(FriendInfo o1, FriendInfo o2) {
-                long o1LastChat = Manager.readLastChat(o1).getDateToLong();
-                long o2LastChat = Manager.readLastChat(o2).getDateToLong();
+        Collections.sort(ret, (o1, o2) -> {
+            long o1LastChat = Manager.readLastChat(o1).getDateToLong();
+            long o2LastChat = Manager.readLastChat(o2).getDateToLong();
 
-                return Collator.getInstance().compare(String.valueOf(o1LastChat), String.valueOf(o2LastChat));
-            }
+            return Collator.getInstance().compare(String.valueOf(o1LastChat), String.valueOf(o2LastChat));
         });
 
         return ret;
@@ -152,14 +146,11 @@ public class Manager {
             ret.add(new ChatInfo(allDatas.get(curKey).toString(), date));
         }
 
-        Collections.sort(ret, new Comparator<ChatInfo>() {
-            @Override
-            public int compare(ChatInfo o1, ChatInfo o2) {
-                long o1Date = Math.abs(o1.getDateToLong());
-                long o2Date = Math.abs(o2.getDateToLong());
+        Collections.sort(ret, (o1, o2) -> {
+            long o1Date = Math.abs(o1.getDateToLong());
+            long o2Date = Math.abs(o2.getDateToLong());
 
-                return Collator.getInstance().compare(String.valueOf(o1Date), String.valueOf(o2Date));
-            }
+            return Collator.getInstance().compare(String.valueOf(o1Date), String.valueOf(o2Date));
         });
 
         return ret;
@@ -204,14 +195,11 @@ public class Manager {
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
-        checkFriendNetwork(friendInfo, new ToDoAfterCheckNetworking() {
-            @Override
-            public void run(boolean status) {
-                if (status) {
-                    sendWithNetwork(friendInfo, chatInfo);
-                } else {
-                    sendWithSMS(friendInfo, chatInfo);
-                }
+        checkFriendNetwork(friendInfo, status -> {
+            if (status) {
+                sendWithNetwork(friendInfo, chatInfo);
+            } else {
+                sendWithSMS(friendInfo, chatInfo);
             }
         });
     }
@@ -251,7 +239,7 @@ public class Manager {
         });
     }
 
-    public static void checkFriendNetwork(FriendInfo friendInfo, @NonNull final ToDoAfterCheckNetworking method) {
+    public static void checkFriendNetwork(FriendInfo friendInfo, @NonNull final Method method) {
         if (!checkNetworkConnect()) {
             Manager.print("Your Network is Disconnected");
             method.run(false);
@@ -286,11 +274,6 @@ public class Manager {
                 }
             });
         }
-    }
-
-    @FunctionalInterface
-    public interface ToDoAfterCheckNetworking {
-        void run(boolean status);
     }
 
 //    Utility Method
@@ -365,8 +348,13 @@ public class Manager {
         Log.d("AMESSAGE_DEBUG", m);
     }
 
-    public static void showActivityName(Activity activity) {
+    public static void initActivity(Activity activity) {
         print("Activity Created: " + activity.getClass().getSimpleName());
+        if (activity.getIntent().getBooleanExtra("CheckUpdate", true))
+            Manager.checkUpdate((status) -> {
+                if (status) Manager.print("Version: " + Manager.getVersionName() + ", is Last Version..!!");
+                else Manager.print("Version: " + Manager.getVersionName() + ", is NOT Last Version..ㅠㅠ");
+            });
     }
 
     public static long getCurrentTimeMills() {
@@ -386,21 +374,29 @@ public class Manager {
                 || (mobile.isAvailable() && mobile.isConnectedOrConnecting()));
     }
 
-    public static boolean checkVersionIsLast(String versionName) {
-        return (getVersionName().equals(versionName));
+    public static void checkUpdate(final Method toDo) {
+        if (!Manager.checkNetworkConnect()) toDo.run(true);
+        else {
+            FirebaseDatabase.getInstance().getReference().child("Management").child("Version").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (Manager.checkVersionIsLast(dataSnapshot.getValue().toString())) { // Check My Version is last
+                        toDo.run(true);
+                    } else {
+                        toDo.run(false);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    toDo.run(false);
+                }
+            });
+        }
     }
 
-    public static int getVersionCode() {
-        PackageInfo packageInfo;
-
-        try{
-            packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-        }catch (PackageManager.NameNotFoundException e){
-            e.printStackTrace();
-            return 0;
-        }
-
-        return packageInfo.versionCode;
+    public static boolean checkVersionIsLast(String versionName) {
+        return (getVersionName().equals(versionName));
     }
 
     public static String getVersionName() {
@@ -418,8 +414,5 @@ public class Manager {
 
     public static NullPointerException getNullPointerException() {
         return new NullPointerException("Manager.context is null");
-    }
-    public static NullPointerException getNullPointerException(String m) {
-        return new NullPointerException(m);
     }
 }
