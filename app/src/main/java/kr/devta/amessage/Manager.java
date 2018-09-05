@@ -191,7 +191,8 @@ public class Manager {
     }
 
 //    Networking And SMS
-    public static final int NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME = 400;
+    public static final int NETWORK_REQUEST_WAITING_TIME = 400;
+    public static final int CHECK_NETWORKING_THRESHOLD_TIME = 800;
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
@@ -256,7 +257,7 @@ public class Manager {
                     } else {
                         long enableTimeDiff = Math.abs(Manager.getCurrentTimeMills() - Long.valueOf(dataSnapshot.getValue().toString()));
                         Manager.print("Enable Time Diff: " + enableTimeDiff);
-                        if (enableTimeDiff <= (NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME * 2)) { // Network is Connected
+                        if (enableTimeDiff <= CHECK_NETWORKING_THRESHOLD_TIME) { // Network is Connected
                             Manager.print("Friend is Connected");
                             networkStatus = true;
                         } else { // Network is NOT Connected
@@ -350,11 +351,25 @@ public class Manager {
 
     public static void initActivity(Activity activity) {
         print("Activity Created: " + activity.getClass().getSimpleName());
-        if (activity.getIntent().getBooleanExtra("CheckUpdate", true))
-            Manager.checkUpdate((status) -> {
-                if (status) Manager.print("Version: " + Manager.getVersionName() + ", is Last Version..!!");
-                else Manager.print("Version: " + Manager.getVersionName() + ", is NOT Last Version..ㅠㅠ");
-            });
+        Manager.checkUpdate((status) -> {
+            if (status) Manager.print("Version: " + Manager.getVersionName() + ", is Last Version..!!");
+            else {
+                Manager.print("Version: " + Manager.getVersionName() + ", is NOT Last Version..ㅠㅠ");
+                activity.finish();
+            }
+        });
+    }
+
+    public static void initActivity(Activity activity, Method method) {
+        print("Activity Created: " + activity.getClass().getSimpleName());
+        Manager.checkUpdate((status) -> {
+            method.run(status);
+            if (status) Manager.print("Version: " + Manager.getVersionName() + ", is Last Version..!!");
+            else {
+                Manager.print("Version: " + Manager.getVersionName() + ", is NOT Last Version..ㅠㅠ");
+                activity.finish();
+            }
+        });
     }
 
     public static long getCurrentTimeMills() {

@@ -3,19 +3,12 @@ package kr.devta.amessage;
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 
@@ -30,15 +23,11 @@ public class SplashLogoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_logo);
         Manager.init(getApplicationContext());
-        this.getIntent().putExtra("CheckUpdate", false);
-        Manager.initActivity(this);
-
-        Manager.checkUpdate((status) -> {
-            if (status) new Handler().postDelayed(this :: checkPermission, 1800);
-            else {
+        Manager.initActivity(this, status -> {
+            if (status) {
+                checkPermission();
             }
         });
-
     }
 
     private void checkPermission() {

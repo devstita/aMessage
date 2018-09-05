@@ -137,7 +137,7 @@ public class MainService extends Service {
 
                     reference.child(phone).setValue(date);
                     try {
-                        Thread.sleep(Manager.NETWORK_REQUEST_TIME_UPDATE_WAITING_TIME);
+                        Thread.sleep(Manager.NETWORK_REQUEST_WAITING_TIME);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
