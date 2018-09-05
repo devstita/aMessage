@@ -14,8 +14,8 @@ android {
         applicationId "kr.devta.amessage"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 1011 // Last ' 1 ' Means Beta, Last ' 0 ' Means Alpha, Last NONE Means Release
-        versionName '1.0.1B'
+        versionCode 1021 // Last ' 1 ' Means Beta, Last ' 0 ' Means Alpha, Last NONE Means Release
+        versionName '1.0.2B'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

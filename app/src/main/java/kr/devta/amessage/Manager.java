@@ -23,6 +23,7 @@ import android.support.annotation.NonNull;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -355,6 +356,7 @@ public class Manager {
             if (status) Manager.print("Version: " + Manager.getVersionName() + ", is Last Version..!!");
             else {
                 Manager.print("Version: " + Manager.getVersionName() + ", is NOT Last Version..ㅠㅠ");
+                Toast.makeText(activity.getApplicationContext(), "최신버전 아님..", Toast.LENGTH_SHORT).show();
                 activity.finish();
             }
         });
@@ -367,6 +369,7 @@ public class Manager {
             if (status) Manager.print("Version: " + Manager.getVersionName() + ", is Last Version..!!");
             else {
                 Manager.print("Version: " + Manager.getVersionName() + ", is NOT Last Version..ㅠㅠ");
+                Toast.makeText(activity.getApplicationContext(), "최신버전 아님..", Toast.LENGTH_SHORT).show();
                 activity.finish();
             }
         });
