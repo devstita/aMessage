@@ -5,7 +5,7 @@ android {
         amessage_keystore {
             keyAlias 'devstita'
             keyPassword 'devstita'
-            storeFile file('amessage.keystore')
+            storeFile file('amessage.jks')
             storePassword 'devstita'
         }
     }
