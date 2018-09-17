@@ -181,13 +181,7 @@ public class Manager {
                 .setLights(Color.BLUE, 3000, 3000)
                 .setAutoCancel(true);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).getBoolean(Manager.MESSAGE_NOTIFICATION_CHANNEL_ID, false)) {
-                notificationManager.createNotificationChannel(new NotificationChannel(Manager.MESSAGE_NOTIFICATION_CHANNEL_ID, MESSAGE_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH));
-                Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).edit().putBoolean(Manager.MESSAGE_NOTIFICATION_CHANNEL_ID, true).apply();
-            }
-            builder.setChannelId(Manager.MESSAGE_NOTIFICATION_CHANNEL_ID);
-        }
+        Manager.makeNotificationChannel(builder, Manager.MESSAGE_NOTIFICATION_CHANNEL_ID, Manager.MESSAGE_NOTIFICATION_CHANNEL_NAME);
 
         notificationManager.notify(0, builder.build());
     }
@@ -333,6 +327,18 @@ public class Manager {
         }
 
         return ret;
+    }
+
+    public static Notification.Builder makeNotificationChannel(Notification.Builder builder, String channelId, String channelName) {
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Manager.getSharedPreferences(channelName).getBoolean(channelId, false)) {
+                notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH));
+                Manager.getSharedPreferences(channelName).edit().putBoolean(channelId, true).apply();
+            }
+            builder.setChannelId(channelId);
+        }
+        return builder;
     }
 
 //    PART: Etc Method And Variable
