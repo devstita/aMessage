@@ -3,6 +3,7 @@ package kr.devta.amessage;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -40,7 +41,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Manager {
-//    Init Method And Variable
+//    PART: Init Method And Variable
     private static Context context;
 
     public static void init(Context context) {
@@ -48,18 +49,18 @@ public class Manager {
         Manager.context = context;
     }
 
-//    Intent Request Code
+//    PART: Intent Request Code
     public static final int REQUEST_CODE_FIREBASE_LOGIN = 1000;
     public static final int REQUEST_CODE_ADD_FRIEND = 1001;
     public static final int REQUEST_CODE_CONTACT_INTENT = 1002;
     public static final int REQUEST_CODE_CHAT = 1003;
     public static final int REQUEST_CODE_CHAT_SETTING = 1004;
 
-//    Thread Flag
+//    PART: Thread Flag
     public static boolean chatAcitivtyCheckNetworkThreadFlag = true;
     public static boolean mainServiceUpdateTimeThreadFlag = true;
 
-//    SharedPreferences
+//    PART: SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";
     public static final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
 
@@ -83,7 +84,7 @@ public class Manager {
         for (String curKey : keys) removeSharedPreferencesToKey(name, curKey);
     }
 
-//    Chat Management
+//    PART: Chat Management
     public static void addChatList(FriendInfo friendInfo) {
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
@@ -191,7 +192,7 @@ public class Manager {
         notificationManager.notify(0, builder.build());
     }
 
-//    Networking And SMS
+//    PART: Networking And SMS
     public static final int NETWORK_REQUEST_WAITING_TIME = 400;
     public static final int CHECK_NETWORKING_THRESHOLD_TIME = 800;
     public static final String DATE_SEPARATOR = "[$ DATE $]";
@@ -278,7 +279,7 @@ public class Manager {
         }
     }
 
-//    Utility Method
+//    PART: Utility Method
     public static boolean isServiceRunning(Class<?> sc) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE))
@@ -334,7 +335,7 @@ public class Manager {
         return ret;
     }
 
-//        Etc Method And Variable
+//    PART: Etc Method And Variable
     public static final String NONE = "[$ NONE $]";
     public static final String SEPARATOR = "_";
 

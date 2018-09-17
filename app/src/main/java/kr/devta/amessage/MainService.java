@@ -53,12 +53,12 @@ public class MainService extends Service {
             }
 
             boolean actived = false;
-            if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) {
+            if (ChatActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
                 if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
                     ChatActivity.adapter.addItem(chatInfo).refresh();
                     actived = true;
                 }
-            } else if (MainActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) {
+            } else if (MainActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
                 MainActivity.updateUI();
             }
             Manager.addChat(-1, friendInfo, chatInfo, actived);
