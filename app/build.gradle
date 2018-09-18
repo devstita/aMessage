@@ -17,6 +17,7 @@ android {
         versionCode 1101 // Last ' 1 ' Means Beta, Last NONE Means Release
         versionName '1.1.0B'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.amessage_keystore
     }
     buildTypes {
         release {
@@ -44,12 +45,16 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
-    api 'com.google.firebase:firebase-core:16.0.0' // Google Firebase Core
-    implementation 'com.google.firebase:firebase-auth:16.0.1' // Google Firebase Auth
-    implementation 'com.firebaseui:firebase-ui-auth:4.0.0' // Google Firebase Auth UI
-    implementation 'com.google.firebase:firebase-database:16.0.1' // Google Firebase Realtime Database
-    api 'gun0912.ted:tedpermission:2.0.0' // TedPermission
+    api 'com.google.firebase:firebase-core:16.0.0'
+    // Google Firebase Core
+    implementation 'com.google.firebase:firebase-auth:16.0.1'
+    // Google Firebase Auth
+    implementation 'com.firebaseui:firebase-ui-auth:4.0.0'
+    // Google Firebase Auth UI
+    implementation 'com.google.firebase:firebase-database:16.0.1'
+    // Google Firebase Realtime Database
+    api 'gun0912.ted:tedpermission:2.0.0'
+    // TedPermission
 }
 
 apply plugin: 'com.google.gms.google-services'
