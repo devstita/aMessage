@@ -137,11 +137,14 @@ public class MainService extends Service {
                     e.printStackTrace();
                 }
             }
+            stopForeground(true);
+            stopSelf(START_STICKY);
 
             Manager.print("Stop MainService.Thread");
         }).start();
 
-        return super.onStartCommand(intent, flags, startId); // < = > return 1
+//        return super.onStartCommand(intent, flags, startId); // < = > return 1
+        return START_STICKY;
 //        START_STICKY ( = 1): 재시작 (intent = null)
 //        START_NOT_STICKY ( = 2): 재시작 안함
 //        START_REDELIVER_INTENT ( = 3): 재시작 (intent = 유지)
