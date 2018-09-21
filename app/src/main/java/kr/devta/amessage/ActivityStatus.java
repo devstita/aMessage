@@ -1,5 +1,5 @@
 package kr.devta.amessage;
 
 public enum ActivityStatus {
-    CREATED, RESUMED, PAUSED, DESTROYED
+    NULL, CREATED, RESUMED, PAUSED, DESTROYED
 }

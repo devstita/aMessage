@@ -2,6 +2,7 @@ package kr.devta.amessage;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -19,7 +20,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class ChatActivity extends AppCompatActivity implements Runnable {
-    public static ActivityStatus status = null;
+    private static ActivityStatus status = null;
     private Thread checkNetworkThread = null;
 
     Toolbar toolbar;
@@ -186,5 +187,17 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
             Manager.checkFriendNetwork(friendInfo, status -> runOnUiThread(() -> messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송")));
         }
         Manager.chatAcitivtyCheckNetworkThreadFlag = true;
+    }
+
+    @NonNull
+    public static ActivityStatus getActivityStatus() {
+        try {
+            if (status == null) {
+                status = ActivityStatus.NULL;
+            }
+        } catch (NullPointerException npe) {
+            npe.printStackTrace();
+        }
+        return status;
     }
 }

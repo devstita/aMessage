@@ -2,6 +2,7 @@ package kr.devta.amessage;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -12,7 +13,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-    public static ActivityStatus status = null;
+    private static ActivityStatus status = null;
 
     Toolbar toolbar;
     ListView chatListView;
@@ -117,5 +118,17 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
         }
+    }
+
+    @NonNull
+    public static ActivityStatus getActivityStatus() {
+        try {
+            if (status == null) {
+                status = ActivityStatus.NULL;
+            }
+        } catch (NullPointerException npe) {
+            npe.printStackTrace();
+        }
+        return status;
     }
 }

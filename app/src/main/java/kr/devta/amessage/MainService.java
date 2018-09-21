@@ -53,12 +53,12 @@ public class MainService extends Service {
             }
 
             boolean actived = false;
-            if (ChatActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) {
+            if (ChatActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
                 if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
                     ChatActivity.adapter.addItem(chatInfo).refresh();
                     actived = true;
                 }
-            } else if (MainActivity.status != null && ChatActivity.status.equals(ActivityStatus.RESUMED)) {
+            } else if (MainActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
                 MainActivity.updateUI();
             }
             Manager.addChat(-1, friendInfo, chatInfo, actived);
@@ -107,47 +107,44 @@ public class MainService extends Service {
         /////////////////////////////////////////////
         /// ||| Make impossible to task kill ||| ///
         /////////////////////////////////////////////
-        Notification.Builder notificationBuilder = new Notification.Builder(getApplicationContext());
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).getBoolean(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, false)) {
-                notificationManager.createNotificationChannel(new NotificationChannel(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH));
-                Manager.getSharedPreferences(Manager.NAME_NOTIFICATION_CHANNEL).edit().putBoolean(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, true).apply();
-            }
-            notificationBuilder.setChannelId(Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID);
-        }
-
-        startForeground(startId, notificationBuilder.build());
+        Notification.Builder builder = new Notification.Builder(getApplicationContext());
+        Manager.makeNotificationChannel(builder, Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_NAME);
+        startForeground(startId, builder.build());
 
         /////////////////////////////////////////////
         ////////////// ||| Run ||| //////////////////
         /////////////////////////////////////////////
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Manager.print("Start MainService.Thread, Flag: " + ((Manager.mainServiceUpdateTimeThreadFlag) ? "True" : "False"));
+        new Thread(() -> {
+            Manager.print("Start MainService.Thread, Flag: " + ((Manager.mainServiceUpdateTimeThreadFlag) ? "True" : "False"));
 
-                while (Manager.mainServiceUpdateTimeThreadFlag) {
-                    FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    DatabaseReference reference = database.getReference().child("Users");
-
-                    String phone = Manager.getMyPhone(getApplicationContext());
-                    String date = String.valueOf(Manager.getCurrentTimeMills());
-
-                    reference.child(phone).setValue(date);
-                    try {
-                        Thread.sleep(Manager.NETWORK_REQUEST_WAITING_TIME);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+            while (Manager.mainServiceUpdateTimeThreadFlag) {
+                Manager.checkUpdate(b -> {
+                    if (!b) {
+                        Manager.print("NOT Last Version in Service");
+                        Manager.mainServiceUpdateTimeThreadFlag = false;
                     }
-                }
+                });
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference reference = database.getReference().child("Users");
 
-                Manager.print("Stop MainService.Thread");
+                String phone = Manager.getMyPhone(getApplicationContext());
+                String date = String.valueOf(Manager.getCurrentTimeMills());
+
+                reference.child(phone).setValue(date);
+                try {
+                    Thread.sleep(Manager.NETWORK_REQUEST_WAITING_TIME);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+            stopForeground(true);
+            stopSelf(START_STICKY);
+
+            Manager.print("Stop MainService.Thread");
         }).start();
 
-        return super.onStartCommand(intent, flags, startId); // < = > return 1
+//        return super.onStartCommand(intent, flags, startId); // < = > return 1
+        return START_STICKY;
 //        START_STICKY ( = 1): 재시작 (intent = null)
 //        START_NOT_STICKY ( = 2): 재시작 안함
 //        START_REDELIVER_INTENT ( = 3): 재시작 (intent = 유지)
