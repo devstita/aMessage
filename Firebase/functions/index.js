@@ -7,9 +7,9 @@ const agent = new http.Agent({keepAlive: true});
 
 exports.ForeverHTTPConnection = functions.https.onRequest((request, response) => {
     const req = http.request({
-        host: '< HOST_ADDRESS >',
+        host: 'https://us-central1-devta-amessage.cloudfunctions.net',
         port: 80,
-        path: '< PATH >',
+        path: '/',
         method: 'GET',
         agent: agent, // ☆ Core Point ☆
     }, (res) => {
