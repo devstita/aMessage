@@ -3,7 +3,6 @@ package kr.devta.amessage;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -32,16 +31,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -197,8 +189,6 @@ public class Manager {
     public static final int CHECK_NETWORKING_THRESHOLD_TIME = 800;
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
-    public static Socket socket = null;
-
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         checkFriendNetwork(friendInfo, status -> {
             if (status) {
@@ -249,32 +239,25 @@ public class Manager {
             Manager.print("Your Network is Disconnected");
             method.run(false);
         } else {
-            if (!checkSocketStatus()) {
-                updateSocket();
-            }
+            FirebaseDatabase.getInstance().getReference().child("InServer").child("Users").child(friendInfo.getPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    boolean haveRun = false;
+                    try {
+                        method.run((dataSnapshot.getValue().equals("CONNECTED")));
+                        haveRun = true;
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (!haveRun) method.run(false);
+                    }
+                }
 
-            try {
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-                bw.write("STATUS::" + friendInfo.getPhone());
-                boolean status = (br.readLine().equals("CONNECTED"));
-                method.run(status);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static boolean checkSocketStatus() {
-        return (Manager.socket != null && Manager.socket.isConnected());
-    }
-
-    public static void updateSocket() {
-        try {
-            Manager.socket = new Socket("192.168.24.42", 8888);
-        } catch (IOException e) {
-            e.printStackTrace();
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    method.run(false);
+                }
+            });
         }
     }
 

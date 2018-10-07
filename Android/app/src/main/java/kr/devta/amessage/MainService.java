@@ -1,12 +1,8 @@
 package kr.devta.amessage;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,79 +10,18 @@ import android.support.annotation.Nullable;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainService extends Service {
-    ChildEventListener childEventListener = new ChildEventListener() {
-        @Override
-        public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-//            Manager.print("MainService (Network Chat Reader - Real Time): " + dataSnapshot.getKey() + ", " + dataSnapshot.getValue().toString());
-            String key = dataSnapshot.getKey();
-            String friendPhone = key.split(Manager.SEPARATOR)[0];
-//            long date = Long.valueOf(dataSnapshot.getValue().toString().split(Manager.DATE_SEPARATOR)[0]);
-//            String message = dataSnapshot.getValue().toString().split(Manager.DATE_SEPARATOR)[1];
-            long date = Long.valueOf(dataSnapshot.getValue().toString().substring(0, Manager.CIPHER_OF_DATE));
-            String message = dataSnapshot.getValue().toString().substring(Manager.CIPHER_OF_DATE + Manager.DATE_SEPARATOR.length(),
-                    dataSnapshot.getValue().toString().length());
-            ChatInfo chatInfo = new ChatInfo(message, (-1 * date));
-
-            ArrayList<FriendInfo> friendInfos = Manager.readChatList();
-            FriendInfo friendInfo = null;
-            for (FriendInfo curFriendInfo : friendInfos) if (curFriendInfo.getPhone().equals(friendPhone)) {
-                friendInfo = new FriendInfo(curFriendInfo.getName(), curFriendInfo.getPhone());
-                break;
-            }
-
-            if (friendInfo == null) { // 친구가 아니면
-                String name = friendPhone;
-                ArrayList<FriendInfo> contacts = Manager.getContacts(getApplicationContext());
-                for (FriendInfo curFriendInfo : contacts) if (friendPhone.equals(curFriendInfo.getPhone())) {
-                    name = curFriendInfo.getName();
-                    break;
-                }
-
-                friendInfo = new FriendInfo(name, friendPhone);
-                Manager.addChatList(friendInfo);
-            }
-
-            boolean actived = false;
-            if (ChatActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
-                if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
-                    ChatActivity.adapter.addItem(chatInfo).refresh();
-                    actived = true;
-                }
-            } else if (MainActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
-                MainActivity.updateUI();
-            }
-            Manager.addChat(-1, friendInfo, chatInfo, actived);
-            FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone(MainService.this.getApplicationContext())).child(dataSnapshot.getKey()).removeValue();
-        }
-
-        @Override
-        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-        }
-
-        @Override
-        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-        }
-
-        @Override
-        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-        }
-    };
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -103,7 +38,6 @@ public class MainService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Manager.init(getApplicationContext());
         Manager.mainServiceUpdateTimeThreadFlag = true;
-        FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone(getApplicationContext())).addChildEventListener(childEventListener);
         Manager.print("MainService.onCreate() -> Database Init Successful");
 
         /////////////////////////////////////////////
@@ -118,6 +52,8 @@ public class MainService extends Service {
         /////////////////////////////////////////////
         new Thread(() -> {
             Manager.print("Start MainService.Thread, Flag: " + ((Manager.mainServiceUpdateTimeThreadFlag) ? "True" : "False"));
+            final Socket[] socket = {null};
+            AtomicBoolean isTryingSocketConnection = new AtomicBoolean(false);
 
             while (Manager.mainServiceUpdateTimeThreadFlag) {
                 Manager.checkUpdate(b -> {
@@ -126,22 +62,25 @@ public class MainService extends Service {
                         Manager.mainServiceUpdateTimeThreadFlag = false;
                     }
                 });
-//                FirebaseDatabase database = FirebaseDatabase.getInstance();
-//                DatabaseReference reference = database.getReference().child("Users");
-//
-//                String phone = Manager.getMyPhone(getApplicationContext());
-//                String date = String.valueOf(Manager.getCurrentTimeMills());
-//
-//                reference.child(phone).setValue(date);
+                new Thread(() -> {
+                    if (!isTryingSocketConnection.get() && Manager.checkNetworkConnect() && (socket[0] == null || !socket[0].isConnected())) {
+                        try {
+                            isTryingSocketConnection.set(true);
+                            Manager.print("Connecting Socket");
+                            socket[0] = new Socket("192.168.24.42", 8888);
+                            isTryingSocketConnection.set(false);
+                            Manager.print("Connected!!");
 
-                if (Manager.checkNetworkConnect() && !Manager.checkSocketStatus()) {
-                    Manager.updateSocket();
-                }
-//                try {
-//                    Thread.sleep(Manager.NETWORK_REQUEST_WAITING_TIME);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
+                            // TODO: Solve Send Phone Number Problem
+                            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket[0].getOutputStream()));
+                            String phone = Manager.getMyPhone(getApplicationContext());
+                            bw.write(phone);
+                            Manager.print("Send Phone Number");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
             }
             stopForeground(true);
             stopSelf(START_STICKY);
@@ -160,7 +99,6 @@ public class MainService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Manager.mainServiceUpdateTimeThreadFlag = false;
-        FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone(getApplicationContext())).removeEventListener(childEventListener);
         Manager.print("MainService.onDestroy() -> Database Destroy Successful");
     }
 }
