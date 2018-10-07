@@ -32,6 +32,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -191,6 +197,8 @@ public class Manager {
     public static final int CHECK_NETWORKING_THRESHOLD_TIME = 800;
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
+    public static Socket socket = null;
+
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         checkFriendNetwork(friendInfo, status -> {
             if (status) {
@@ -241,35 +249,32 @@ public class Manager {
             Manager.print("Your Network is Disconnected");
             method.run(false);
         } else {
-            DatabaseReference friendStatusReference = FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone());
-            friendStatusReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    boolean networkStatus;
+            if (!checkSocketStatus()) {
+                updateSocket();
+            }
 
-                    if (dataSnapshot.getValue() == null) { // NO REGISTERED
-                        Manager.print("Friend is NOT Registered");
-                        networkStatus = false;
-                    } else {
-                        long enableTimeDiff = Math.abs(Manager.getCurrentTimeMills() - Long.valueOf(dataSnapshot.getValue().toString()));
-                        Manager.print("Enable Time Diff: " + enableTimeDiff);
-                        if (enableTimeDiff <= CHECK_NETWORKING_THRESHOLD_TIME) { // Network is Connected
-                            Manager.print("Friend is Connected");
-                            networkStatus = true;
-                        } else { // Network is NOT Connected
-                            Manager.print("Friend is NOT Connected");
-                            networkStatus = false;
-                        }
-                    }
+            try {
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                    method.run(networkStatus);
-                }
+                bw.write("STATUS::" + friendInfo.getPhone());
+                boolean status = (br.readLine().equals("CONNECTED"));
+                method.run(status);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+    public static boolean checkSocketStatus() {
+        return (Manager.socket != null && Manager.socket.isConnected());
+    }
 
-                }
-            });
+    public static void updateSocket() {
+        try {
+            Manager.socket = new Socket("192.168.24.42", 8888);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

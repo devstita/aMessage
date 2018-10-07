@@ -17,6 +17,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 
 public class MainService extends Service {
@@ -124,18 +126,22 @@ public class MainService extends Service {
                         Manager.mainServiceUpdateTimeThreadFlag = false;
                     }
                 });
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference reference = database.getReference().child("Users");
+//                FirebaseDatabase database = FirebaseDatabase.getInstance();
+//                DatabaseReference reference = database.getReference().child("Users");
+//
+//                String phone = Manager.getMyPhone(getApplicationContext());
+//                String date = String.valueOf(Manager.getCurrentTimeMills());
+//
+//                reference.child(phone).setValue(date);
 
-                String phone = Manager.getMyPhone(getApplicationContext());
-                String date = String.valueOf(Manager.getCurrentTimeMills());
-
-                reference.child(phone).setValue(date);
-                try {
-                    Thread.sleep(Manager.NETWORK_REQUEST_WAITING_TIME);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (Manager.checkNetworkConnect() && !Manager.checkSocketStatus()) {
+                    Manager.updateSocket();
                 }
+//                try {
+//                    Thread.sleep(Manager.NETWORK_REQUEST_WAITING_TIME);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
             }
             stopForeground(true);
             stopSelf(START_STICKY);
