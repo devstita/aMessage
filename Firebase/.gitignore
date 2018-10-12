@@ -92,3 +92,5 @@ modules.xml
 
 
 # End of https://www.gitignore.io/api/firebase,webstorm+all
+
+firebase-debug.log
