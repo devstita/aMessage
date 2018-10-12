@@ -3,7 +3,6 @@ package kr.devta.amessage;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -35,7 +34,6 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -241,33 +239,23 @@ public class Manager {
             Manager.print("Your Network is Disconnected");
             method.run(false);
         } else {
-            DatabaseReference friendStatusReference = FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone());
-            friendStatusReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("InServer").child("Users").child(friendInfo.getPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    boolean networkStatus;
-
-                    if (dataSnapshot.getValue() == null) { // NO REGISTERED
-                        Manager.print("Friend is NOT Registered");
-                        networkStatus = false;
-                    } else {
-                        long enableTimeDiff = Math.abs(Manager.getCurrentTimeMills() - Long.valueOf(dataSnapshot.getValue().toString()));
-                        Manager.print("Enable Time Diff: " + enableTimeDiff);
-                        if (enableTimeDiff <= CHECK_NETWORKING_THRESHOLD_TIME) { // Network is Connected
-                            Manager.print("Friend is Connected");
-                            networkStatus = true;
-                        } else { // Network is NOT Connected
-                            Manager.print("Friend is NOT Connected");
-                            networkStatus = false;
-                        }
+                    boolean haveRun = false;
+                    try {
+                        method.run((dataSnapshot.getValue().equals("CONNECTED")));
+                        haveRun = true;
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (!haveRun) method.run(false);
                     }
-
-                    method.run(networkStatus);
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    method.run(false);
                 }
             });
         }
