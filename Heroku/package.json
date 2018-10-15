@@ -1,0 +1,14 @@
+{
+  "name": "a-message",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "run"
+  },
+  "author": "Devta",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}
