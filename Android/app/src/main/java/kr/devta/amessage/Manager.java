@@ -242,15 +242,18 @@ public class Manager {
             FirebaseDatabase.getInstance().getReference().child("InServer").child("Users").child(friendInfo.getPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    boolean haveRun = false;
-                    try {
-                        method.run((dataSnapshot.getValue().equals("CONNECTED")));
-                        haveRun = true;
-                    } catch (NullPointerException e) {
-                        e.printStackTrace();
-                    } finally {
-                        if (!haveRun) method.run(false);
-                    }
+                    FirebaseDatabase.getInstance().getReference().child("TestServer/UserNetworkStatus").child(Manager.getMyPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.getValue().equals("Connected")) method.run(true);
+                            else method.run(false);
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            method.run(false);
+                        }
+                    });
                 }
 
                 @Override

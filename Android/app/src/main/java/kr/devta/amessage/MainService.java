@@ -4,22 +4,11 @@ import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.net.URISyntaxException;
 
 public class MainService extends Service {
 
@@ -52,9 +41,6 @@ public class MainService extends Service {
         /////////////////////////////////////////////
         new Thread(() -> {
             Manager.print("Start MainService.Thread, Flag: " + ((Manager.mainServiceUpdateTimeThreadFlag) ? "True" : "False"));
-            final Socket[] socket = {null};
-            AtomicBoolean isTryingSocketConnection = new AtomicBoolean(false);
-
             while (Manager.mainServiceUpdateTimeThreadFlag) {
                 Manager.checkUpdate(b -> {
                     if (!b) {
@@ -62,30 +48,22 @@ public class MainService extends Service {
                         Manager.mainServiceUpdateTimeThreadFlag = false;
                     }
                 });
-                new Thread(() -> {
-                    if (!isTryingSocketConnection.get() && Manager.checkNetworkConnect() && (socket[0] == null || !socket[0].isConnected())) {
-                        try {
-                            isTryingSocketConnection.set(true);
-                            Manager.print("Connecting Socket");
-                            socket[0] = new Socket("192.168.24.42", 8888);
-                            isTryingSocketConnection.set(false);
-                            Manager.print("Connected!!");
-
-                            // TODO: Solve Send Phone Number Problem
-                            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(socket[0].getOutputStream()));
-                            String phone = Manager.getMyPhone(getApplicationContext());
-                            bw.write(phone);
-                            Manager.print("Send Phone Number");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();
             }
             stopForeground(true);
             stopSelf(START_STICKY);
 
             Manager.print("Stop MainService.Thread");
+        }).start();
+
+        new Thread(() -> {
+            try {
+                Socket socket = IO.socket("https://a-message.herokuapp.com");
+                socket.connect();
+
+                socket.emit("phone", Manager.getMyPhone(getApplicationContext()));
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
         }).start();
 
 //        return super.onStartCommand(intent, flags, startId); // < = > return 1
