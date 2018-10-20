@@ -5,10 +5,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
-
 import java.net.URISyntaxException;
+
+import io.socket.client.IO;
+import io.socket.client.Socket;
 
 public class MainService extends Service {
 
@@ -26,7 +26,6 @@ public class MainService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Manager.init(getApplicationContext());
-        Manager.mainServiceUpdateTimeThreadFlag = true;
         Manager.print("MainService.onCreate() -> Database Init Successful");
 
         /////////////////////////////////////////////
@@ -39,21 +38,6 @@ public class MainService extends Service {
         /////////////////////////////////////////////
         ////////////// ||| Run ||| //////////////////
         /////////////////////////////////////////////
-        new Thread(() -> {
-            Manager.print("Start MainService.Thread, Flag: " + ((Manager.mainServiceUpdateTimeThreadFlag) ? "True" : "False"));
-            while (Manager.mainServiceUpdateTimeThreadFlag) {
-                Manager.checkUpdate(b -> {
-                    if (!b) {
-                        Manager.print("NOT Last Version in Service");
-                        Manager.mainServiceUpdateTimeThreadFlag = false;
-                    }
-                });
-            }
-            stopForeground(true);
-            stopSelf(START_STICKY);
-
-            Manager.print("Stop MainService.Thread");
-        }).start();
 
         new Thread(() -> {
             try {
@@ -61,6 +45,12 @@ public class MainService extends Service {
                 socket.connect();
 
                 socket.emit("phone", Manager.getMyPhone(getApplicationContext()));
+                socket.io().on(Socket.EVENT_DISCONNECT, args -> {
+                    if (Manager.checkNetworkConnect()) {
+                        // TODO: Socket Reconnect when Disconnected
+                        socket.io().reconnection();
+                    }
+                });
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
@@ -76,7 +66,6 @@ public class MainService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Manager.mainServiceUpdateTimeThreadFlag = false;
         Manager.print("MainService.onDestroy() -> Database Destroy Successful");
     }
 }

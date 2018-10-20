@@ -56,7 +56,6 @@ public class Manager {
 
 //    PART: Thread Flag
     public static boolean chatAcitivtyCheckNetworkThreadFlag = true;
-    public static boolean mainServiceUpdateTimeThreadFlag = true;
 
 //    PART: SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";

@@ -50,7 +50,10 @@ dependencies {
     implementation 'com.firebaseui:firebase-ui-auth:4.0.0' // Google Firebase Auth UI
     implementation 'com.google.firebase:firebase-database:16.0.1' // Google Firebase Realtime Database
     api 'gun0912.ted:tedpermission:2.0.0' // TedPermission
-    api 'com.github.nkzawa:socket.io-client:0.3.0'
+    api ('io.socket:socket.io-client:1.0.0') {
+        // excluding org.json which is provided by Android
+        exclude group: 'org.json', module: 'json'
+    }
 
 }
 
