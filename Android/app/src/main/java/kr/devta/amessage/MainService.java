@@ -48,7 +48,6 @@ public class MainService extends Service {
 
         new Thread(() -> {
             try {
-                // COMPLETED: Auto Reconnect when Disconnected
                 IO.Options socketOptions = new IO.Options();
                 socketOptions.forceNew = true;
                 socketOptions.reconnection = true;

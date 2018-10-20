@@ -238,7 +238,10 @@ public class Manager {
             FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    method.run(dataSnapshot.getValue().equals("Connected"));
+                    if (dataSnapshot.getValue() == null) {
+                        method.run(false);
+                    } else
+                        method.run(dataSnapshot.getValue().equals("Connected"));
                 }
 
                 @Override
