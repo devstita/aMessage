@@ -70,12 +70,12 @@ public class SplashLogoActivity extends AppCompatActivity {
     }
 
     private void login() {
-//        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-//            List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
-//            startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);
-//        } else done();
-        // TEMP : Test Mode (Without Real Device)
-        done();
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
+            startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);
+        } else done();
+        // TEMP: Test Mode (Without Real Device)
+//        done();
     }
 
     private void done() {

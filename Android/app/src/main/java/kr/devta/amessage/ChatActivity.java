@@ -180,7 +180,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
     public void run() {
         while (Manager.chatAcitivtyCheckNetworkThreadFlag) {
             try {
-                Thread.sleep(800);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

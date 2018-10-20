@@ -14,8 +14,8 @@ android {
         applicationId "kr.devta.amessage"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 1101 // Last ' 1 ' Means Beta, Last NONE Means Release
-        versionName '1.1.0B'
+        versionCode 2001 // Last ' 1 ' Means Beta, Last NONE Means Release
+        versionName '2.0.0B'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.amessage_keystore
     }

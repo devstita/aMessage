@@ -7,6 +7,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.util.ArrayList;
 
 public class MainBroadcastReceiver extends BroadcastReceiver {
@@ -20,10 +22,12 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
 //        Manager.print("Something is received: " + intent.getAction());
         Manager.init(context);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(new Intent(context, MainService.class));
-        } else {
-            context.startService(new Intent(context, MainService.class));
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(new Intent(context, MainService.class));
+            } else {
+                context.startService(new Intent(context, MainService.class));
+            }
         }
 //        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {

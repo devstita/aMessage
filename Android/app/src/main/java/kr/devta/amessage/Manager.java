@@ -39,7 +39,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Manager {
-//    PART : Init Method And Variable
+//    PART: Init Method And Variable
     private static Context context;
 
     public static void init(Context context) {
@@ -47,17 +47,17 @@ public class Manager {
         Manager.context = context;
     }
 
-//    PART : Intent Request Code
+//    PART: Intent Request Code
     public static final int REQUEST_CODE_FIREBASE_LOGIN = 1000;
     public static final int REQUEST_CODE_ADD_FRIEND = 1001;
     public static final int REQUEST_CODE_CONTACT_INTENT = 1002;
     public static final int REQUEST_CODE_CHAT = 1003;
     public static final int REQUEST_CODE_CHAT_SETTING = 1004;
 
-//    PART : Thread Flag
+//    PART: Thread Flag
     public static boolean chatAcitivtyCheckNetworkThreadFlag = true;
 
-//    PART : SharedPreferences
+//    PART: SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";
     public static final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
 
@@ -79,7 +79,7 @@ public class Manager {
         for (String curKey : keys) removeSharedPreferencesToKey(name, curKey);
     }
 
-//    PART : Chat Management
+//    PART: Chat Management
     public static void addChatList(FriendInfo friendInfo) {
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
@@ -182,7 +182,7 @@ public class Manager {
         notificationManager.notify(1000, builder.build());
     }
 
-//    PART : Networking And SMS
+//    PART: Networking And SMS
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
@@ -235,21 +235,10 @@ public class Manager {
             Manager.print("Your Network is Disconnected");
             method.run(false);
         } else {
-            FirebaseDatabase.getInstance().getReference().child("InServer").child("Users").child(friendInfo.getPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    FirebaseDatabase.getInstance().getReference().child("TestServer/UserNetworkStatus").child(Manager.getMyPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.getValue().equals("Connected")) method.run(true);
-                            else method.run(false);
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                            method.run(false);
-                        }
-                    });
+                    method.run(dataSnapshot.getValue().equals("Connected"));
                 }
 
                 @Override
@@ -260,7 +249,7 @@ public class Manager {
         }
     }
 
-//    PART : Utility Method
+//    PART: Utility Method
     public static boolean isServiceRunning(Class<?> sc) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE))
@@ -277,16 +266,16 @@ public class Manager {
 
     @SuppressLint("MissingPermission")
     public static String getMyPhone(Context context) {
-//        String phone;
-//        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-//        phone = telephonyManager.getLine1Number();
-//
-//        phone = phone.replace("+82", "0");
-//        if (phone.startsWith("82")) phone = phone.replace("82", "");
-//
-//        return phone;
+        String phone;
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        phone = telephonyManager.getLine1Number();
+
+        phone = phone.replace("+82", "0");
+        if (phone.startsWith("82")) phone = phone.replace("82", "");
+
+        return phone;
         // TEMP: Test Mode (Without Real Device)
-        return "01099999999";
+//        return "01099999999";
     }
 
     public static String getMyPhone() {
@@ -331,7 +320,7 @@ public class Manager {
         return builder;
     }
 
-//    PART : Etc Method And Variable
+//    PART: Etc Method And Variable
     public static final String NONE = "[$ NONE $]";
     public static final String SEPARATOR = "_";
 
@@ -390,7 +379,9 @@ public class Manager {
             FirebaseDatabase.getInstance().getReference().child("Management").child("Version").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (Manager.checkVersionIsLast(dataSnapshot.getValue().toString())) { // Check My Version is last
+                    String serverVersion = dataSnapshot.getValue().toString();
+                    Manager.print("Server Version: " + serverVersion);
+                    if (Manager.checkVersionIsLast(serverVersion)) { // Check My Version is last
                         toDo.run(true);
                     } else {
                         toDo.run(false);

@@ -48,7 +48,7 @@ public class MainService extends Service {
 
         new Thread(() -> {
             try {
-                // TODO : Auto Reconnect when Disconnected
+                // COMPLETED: Auto Reconnect when Disconnected
                 IO.Options socketOptions = new IO.Options();
                 socketOptions.forceNew = true;
                 socketOptions.reconnection = true;
@@ -56,14 +56,13 @@ public class MainService extends Service {
                 Socket socket = IO.socket("https://a-message.herokuapp.com", socketOptions);
                 socket.connect();
 
-                socket.io().on(Socket.EVENT_DISCONNECT, args -> {
-                    if (Manager.checkNetworkConnect()) {
-                        Manager.print("Disconnected..");
-                    }
-                }).on(Socket.EVENT_CONNECT, args -> {
+                socket.on(Socket.EVENT_CONNECT, args -> {
                     Manager.print("Connected to Socket.IO Server");
                     socket.emit("phone", Manager.getMyPhone());
-            });
+                }).on(Socket.EVENT_RECONNECT, args -> {
+                    Manager.print("Re-Connected to Socket.IO Server");
+                    socket.emit("phone", Manager.getMyPhone());
+                }).on(Socket.EVENT_DISCONNECT, args -> Manager.print("Disconnected to Socket.IO Server"));
             } catch (URISyntaxException e) {
                 e.printStackTrace();
                 Manager.print("Error from Socket.IO");
