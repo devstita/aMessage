@@ -17,13 +17,10 @@ public class TutorialActivity extends AppCompatActivity {
 
         skipTutorialButton = findViewById(R.id.tutorial_SkipTutorialButton);
 
-        skipTutorialButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Manager.getSharedPreferences(Manager.NAME_TUTORIAL).edit().putBoolean(Manager.KEY_SAW_TUTORIAL, true).apply();
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                finish();
-            }
+        skipTutorialButton.setOnClickListener(v -> {
+            Manager.getSharedPreferences(Manager.NAME_TUTORIAL).edit().putBoolean(Manager.KEY_SAW_TUTORIAL, true).apply();
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            finish();
         });
 
         if (Manager.getSharedPreferences(Manager.NAME_TUTORIAL).getBoolean(Manager.KEY_SAW_TUTORIAL, false)) {

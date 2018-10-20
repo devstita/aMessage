@@ -1,7 +1,9 @@
 package kr.devta.amessage;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
@@ -31,8 +33,13 @@ public class MainService extends Service {
         /////////////////////////////////////////////
         /// ||| Make impossible to task kill ||| ///
         /////////////////////////////////////////////
-        Notification.Builder builder = new Notification.Builder(getApplicationContext());
-        Manager.makeNotificationChannel(builder, Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID, Manager.MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_NAME);
+        Notification.Builder builder;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            builder = new Notification.Builder(getApplicationContext(), Manager.NOTIFICATION_CHANNEL_ID);
+            builder = Manager.makeNotificationChannel(builder);
+        } else {
+            builder = new Notification.Builder(getApplicationContext());
+        }
         startForeground(startId, builder.build());
 
         /////////////////////////////////////////////
@@ -41,18 +48,25 @@ public class MainService extends Service {
 
         new Thread(() -> {
             try {
-                Socket socket = IO.socket("https://a-message.herokuapp.com");
+                // TODO : Auto Reconnect when Disconnected
+                IO.Options socketOptions = new IO.Options();
+                socketOptions.forceNew = true;
+                socketOptions.reconnection = true;
+
+                Socket socket = IO.socket("https://a-message.herokuapp.com", socketOptions);
                 socket.connect();
 
-                socket.emit("phone", Manager.getMyPhone(getApplicationContext()));
                 socket.io().on(Socket.EVENT_DISCONNECT, args -> {
                     if (Manager.checkNetworkConnect()) {
-                        // TODO: Socket Reconnect when Disconnected
-                        socket.io().reconnection();
+                        Manager.print("Disconnected..");
                     }
-                });
+                }).on(Socket.EVENT_CONNECT, args -> {
+                    Manager.print("Connected to Socket.IO Server");
+                    socket.emit("phone", Manager.getMyPhone());
+            });
             } catch (URISyntaxException e) {
                 e.printStackTrace();
+                Manager.print("Error from Socket.IO");
             }
         }).start();
 

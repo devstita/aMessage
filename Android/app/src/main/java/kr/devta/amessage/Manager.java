@@ -39,7 +39,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Manager {
-//    PART: Init Method And Variable
+//    PART : Init Method And Variable
     private static Context context;
 
     public static void init(Context context) {
@@ -47,17 +47,17 @@ public class Manager {
         Manager.context = context;
     }
 
-//    PART: Intent Request Code
+//    PART : Intent Request Code
     public static final int REQUEST_CODE_FIREBASE_LOGIN = 1000;
     public static final int REQUEST_CODE_ADD_FRIEND = 1001;
     public static final int REQUEST_CODE_CONTACT_INTENT = 1002;
     public static final int REQUEST_CODE_CHAT = 1003;
     public static final int REQUEST_CODE_CHAT_SETTING = 1004;
 
-//    PART: Thread Flag
+//    PART : Thread Flag
     public static boolean chatAcitivtyCheckNetworkThreadFlag = true;
 
-//    PART: SharedPreferences
+//    PART : SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";
     public static final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
 
@@ -65,8 +65,6 @@ public class Manager {
 
     public static final String NAME_CHAT_SEPARATOR = "[$ NAME_CHAT $]";
     public static final String KEY_CHAT_SENDER_SEPARATOR = "$"; // $: Expression Symbol, \\$: String Symbol ( = java.util.regex.Pattern.quote("$")
-
-    public static final String NAME_NOTIFICATION_CHANNEL = "Name_NotificationChannel";
 
     public static SharedPreferences getSharedPreferences(String name) {
         return Manager.context.getSharedPreferences(name, Context.MODE_PRIVATE);
@@ -81,7 +79,7 @@ public class Manager {
         for (String curKey : keys) removeSharedPreferencesToKey(name, curKey);
     }
 
-//    PART: Chat Management
+//    PART : Chat Management
     public static void addChatList(FriendInfo friendInfo) {
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
@@ -178,14 +176,13 @@ public class Manager {
                 .setLights(Color.BLUE, 3000, 3000)
                 .setAutoCancel(true);
 
-        Manager.makeNotificationChannel(builder, Manager.MESSAGE_NOTIFICATION_CHANNEL_ID, Manager.MESSAGE_NOTIFICATION_CHANNEL_NAME);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O)
+            builder = Manager.makeNotificationChannel(builder);
 
-        notificationManager.notify(0, builder.build());
+        notificationManager.notify(1000, builder.build());
     }
 
-//    PART: Networking And SMS
-    public static final int NETWORK_REQUEST_WAITING_TIME = 400;
-    public static final int CHECK_NETWORKING_THRESHOLD_TIME = 800;
+//    PART : Networking And SMS
     public static final String DATE_SEPARATOR = "[$ DATE $]";
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
@@ -263,7 +260,7 @@ public class Manager {
         }
     }
 
-//    PART: Utility Method
+//    PART : Utility Method
     public static boolean isServiceRunning(Class<?> sc) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE))
@@ -280,14 +277,16 @@ public class Manager {
 
     @SuppressLint("MissingPermission")
     public static String getMyPhone(Context context) {
-        String phone;
-        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        phone = telephonyManager.getLine1Number();
-
-        phone = phone.replace("+82", "0");
-        if (phone.startsWith("82")) phone = phone.replace("82", "");
-
-        return phone;
+//        String phone;
+//        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+//        phone = telephonyManager.getLine1Number();
+//
+//        phone = phone.replace("+82", "0");
+//        if (phone.startsWith("82")) phone = phone.replace("82", "");
+//
+//        return phone;
+        // TEMP: Test Mode (Without Real Device)
+        return "01099999999";
     }
 
     public static String getMyPhone() {
@@ -319,29 +318,25 @@ public class Manager {
         return ret;
     }
 
-    public static Notification.Builder makeNotificationChannel(Notification.Builder builder, String channelId, String channelName) {
+    public static Notification.Builder makeNotificationChannel(Notification.Builder builder) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (Manager.getSharedPreferences(channelName).getBoolean(channelId, false)) {
-                notificationManager.createNotificationChannel(new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH));
-                Manager.getSharedPreferences(channelName).edit().putBoolean(channelId, true).apply();
+            if (!Manager.getSharedPreferences(NOTIFICATION_CHANNEL_NAME).getBoolean(NOTIFICATION_CHANNEL_ID, false)) {
+                assert notificationManager != null;
+                notificationManager.createNotificationChannel(new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH));
+                Manager.getSharedPreferences(NOTIFICATION_CHANNEL_NAME).edit().putBoolean(NOTIFICATION_CHANNEL_ID, true).apply();
             }
-            builder.setChannelId(channelId);
+            builder.setChannelId("aMessage Notification ID");
         }
         return builder;
     }
 
-//    PART: Etc Method And Variable
+//    PART : Etc Method And Variable
     public static final String NONE = "[$ NONE $]";
     public static final String SEPARATOR = "_";
 
-    public static final int CIPHER_OF_DATE = 13;
-
-    public static final String MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_ID = "백그라운드 작동 알림 채널_ID";
-    public static final String MAIN_SERVICE_FOREGROUND_NOTIFICATION_CHANNEL_NAME = "백그라운드 작동 알림 채널";
-
-    public static final String MESSAGE_NOTIFICATION_CHANNEL_ID = "메세지 알림 채널_ID";
-    public static final String MESSAGE_NOTIFICATION_CHANNEL_NAME = "메세지 알림 채널";
+    public static final String NOTIFICATION_CHANNEL_ID = "aMessage Notification ID";
+    public static final String NOTIFICATION_CHANNEL_NAME = "aMessage Notification";
 
     public static void print(String m) {
         Log.d("AMESSAGE_DEBUG", m);

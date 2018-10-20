@@ -3,6 +3,7 @@ package kr.devta.amessage;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
@@ -19,11 +20,13 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
 //        Manager.print("Something is received: " + intent.getAction());
         Manager.init(context);
 
-        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
-            if (!Manager.isServiceRunning(context, MainService.class)) context.startService(new Intent(context, MainService.class));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(new Intent(context, MainService.class));
+        } else {
+            context.startService(new Intent(context, MainService.class));
+        }
+//        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
-//            Manager.print("He's coming..!!!!");
-            if (!Manager.isServiceRunning(context, MainService.class)) context.startService(new Intent(context, MainService.class));
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
                 Object[] messages = (Object[]) bundle.get("pdus");

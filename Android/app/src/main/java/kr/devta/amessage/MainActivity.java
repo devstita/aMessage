@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Manager.init(getApplicationContext());
         Manager.initActivity(this);
 
         status = ActivityStatus.CREATED;
@@ -38,32 +39,21 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         chatListView.setAdapter(adapter);
-        chatListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                FriendInfo friendInfo = adapter.getItem(position);
-                Intent chatIntent = new Intent(getApplicationContext(), ChatActivity.class);
-                chatIntent.putExtra("FriendInfo", friendInfo);
-                startActivityForResult(chatIntent, Manager.REQUEST_CODE_CHAT);
-            }
+        chatListView.setOnItemClickListener((parent, view, position, id) -> {
+            FriendInfo friendInfo = adapter.getItem(position);
+            Intent chatIntent = new Intent(getApplicationContext(), ChatActivity.class);
+            chatIntent.putExtra("FriendInfo", friendInfo);
+            startActivityForResult(chatIntent, Manager.REQUEST_CODE_CHAT);
         });
 
-        chatListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Intent intent = new Intent(getApplicationContext(), ChatSettingActivity.class);
-                intent.putExtra("FriendInfo", adapter.getItem(position));
-                startActivityForResult(intent, Manager.REQUEST_CODE_CHAT_SETTING);
-                return false;
-            }
+        chatListView.setOnItemLongClickListener((adapterView, view, position, id) -> {
+            Intent intent = new Intent(getApplicationContext(), ChatSettingActivity.class);
+            intent.putExtra("FriendInfo", adapter.getItem(position));
+            startActivityForResult(intent, Manager.REQUEST_CODE_CHAT_SETTING);
+            return false;
         });
 
-        mainFloatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivityForResult(new Intent(getApplicationContext(), AddChatActivity.class), Manager.REQUEST_CODE_ADD_FRIEND);
-            }
-        });
+        mainFloatingActionButton.setOnClickListener(v -> startActivityForResult(new Intent(getApplicationContext(), AddChatActivity.class), Manager.REQUEST_CODE_ADD_FRIEND));
     }
 
     @Override

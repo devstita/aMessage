@@ -2,6 +2,7 @@ package kr.devta.amessage;
 
 import android.Manifest;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
@@ -51,27 +52,45 @@ public class SplashLogoActivity extends AppCompatActivity {
         };
         TedPermission.Builder tedPermission = TedPermission.with(getApplicationContext());
         tedPermission.setPermissionListener(permissionListener);
-        tedPermission.setPermissions(Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS,
-                Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS);
+
+        String[] permissions;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS,
+                    Manifest.permission.FOREGROUND_SERVICE};
+        } else {
+            permissions = new String[]{Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS};
+        }
+
+        tedPermission.setPermissions(permissions);
         tedPermission.setRationaleMessage("전화번호를 읽고, 문자 송수신을 위해서 이 권한이 필요합니다. ");
         tedPermission.setDeniedMessage("권한을 거부하시면 앱을 사용할 수 없습니다. [ 설정 ] -> [ 권한 ] 에서 다시 허용할 수 있습니다. ");
         tedPermission.check();
     }
 
     private void login() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
-            startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);
-        } else done();
+//        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+//            List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
+//            startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);
+//        } else done();
+        // TEMP : Test Mode (Without Real Device)
+        done();
     }
 
     private void done() {
         if (!Manager.isServiceRunning(MainService.class)) {
             Manager.print("MainService is not running");
-            startService(new Intent(getApplicationContext(), MainService.class));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(new Intent(getApplicationContext(), MainService.class));
+            } else {
+                startService(new Intent(getApplicationContext(), MainService.class));
+            }
         }
 
-        startActivity(new Intent(getApplicationContext(), TutorialActivity.class));
+//        startActivity(new Intent(getApplicationContext(), TutorialActivity.class));
+        // TEMP: Test Mode (Without Tutorial)
+        startActivity(new Intent(getApplicationContext(), MainActivity.class));
         finish();
     }
 
