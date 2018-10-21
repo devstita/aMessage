@@ -153,6 +153,7 @@ public class Manager {
         return ret;
     }
 
+    // TODO: Develop Lighter
     public static ChatInfo readLastChat(FriendInfo friendInfo) {
         ArrayList<ChatInfo> chats = readChat(friendInfo);
         if (chats.size() <= 0) return new ChatInfo(Manager.NONE);
@@ -199,6 +200,7 @@ public class Manager {
         SmsManager.getDefault().sendTextMessage(friendInfo.getPhone(), null, chatInfo.getMessage(), null, null);
     }
 
+    // TODO: IF Message is NOT Delete, Send SMS
     private static void sendWithNetwork(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootReference = database.getReference();
