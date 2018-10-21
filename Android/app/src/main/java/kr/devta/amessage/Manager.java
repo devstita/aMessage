@@ -234,9 +234,10 @@ public class Manager {
                         Manager.print("Friend is NOT in DB");
                         friendNetworkStatus = false;
                         method.run(false);
-                    } else
+                    } else {
                         friendNetworkStatus = dataSnapshot.getValue().equals("Connected");
-                    method.run(dataSnapshot.getValue().equals("Connected"));
+                        method.run(dataSnapshot.getValue().equals("Connected"));
+                    }
                 }
 
                 @Override
@@ -248,35 +249,8 @@ public class Manager {
             });
         }
     }
-    public static void checkFriendNetwork(FriendInfo friendInfo) {
-        if (!checkNetworkConnect()) {
-            Manager.print("Your Network is Disconnected");
-            ChatActivity.updateUI(false);
-        } else {
-            FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.getValue() == null) {
-                        Manager.print("Friend is NOT in DB");
-                        friendNetworkStatus = false;
-                        ChatActivity.updateUI(false);
-                    } else {
-                        friendNetworkStatus = dataSnapshot.getValue().equals("Connected");
-                        ChatActivity.updateUI(dataSnapshot.getValue().equals("Connected"));
-                    }
-                }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Manager.print("Check Friend Network Status Cancelled..");
-                    friendNetworkStatus = false;
-                    ChatActivity.updateUI(false);
-                }
-            });
-        }
-    }
-
-//    PART: Utility Method
+    //    PART: Utility Method
     public static boolean isServiceRunning(Class<?> sc) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE))

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Build;
 import android.support.constraint.ConstraintLayout;
 import android.text.util.Linkify;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,16 @@ public class ChatingListViewAdapter extends BaseAdapter {
         TextView chatTextView = layout.findViewById(R.id.chatingListViewItem_ChatTextView);
         TextView dateTextView = layout.findViewById(R.id.chatingListViewItem_DateTextView);
         int sender = ((items.get(position).getDateToLong() > 0) ? 1 : -1);
+
+        // If sender is ME, Gravity is Right
+        //    sender is YOU, Gravity is Left
+        if (sender == 1) {
+            chatTextView.setGravity(Gravity.END);
+            dateTextView.setGravity(Gravity.END);
+        } else {
+            chatTextView.setGravity(Gravity.START);
+            dateTextView.setGravity(Gravity.START);
+        }
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             chatTextView.setTextColor(context.getResources().getColor(R.color.text));

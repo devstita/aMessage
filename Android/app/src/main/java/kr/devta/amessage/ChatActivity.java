@@ -177,7 +177,6 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
 
     @Override
     public void run() {
-        // DONE: Real Send, Display Synchronize
         while (Manager.chatAcitivtyCheckNetworkThreadFlag) {
             Manager.checkFriendNetwork(friendInfo, ChatActivity::updateUI);
             try {
