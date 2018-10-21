@@ -2,6 +2,7 @@ package kr.devta.amessage;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -25,7 +26,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
 
     Toolbar toolbar;
     ListView chatingListView;
-    EditText messageEditText;
+    private static EditText messageEditText;
     Button sendButton;
 
     FriendInfo friendInfo;
@@ -84,20 +85,17 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
         });
 
         sendButton.setEnabled(false);
-        sendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String message = messageEditText.getText().toString();
-                if (message == null || message.isEmpty()) return;
-                messageEditText.setText("");
+        sendButton.setOnClickListener(v -> {
+            String message = messageEditText.getText().toString();
+            if (message.isEmpty()) return;
+            messageEditText.setText("");
 
-                ChatInfo chatInfo = new ChatInfo(message);
+            ChatInfo chatInfo = new ChatInfo(message);
 
-                Manager.send(friendInfo, chatInfo);
+            Manager.send(friendInfo, chatInfo);
 
-                adapter.addItem(chatInfo).refresh();
-                Manager.addChat(1, friendInfo, chatInfo, true);
-            }
+            adapter.addItem(chatInfo).refresh();
+            Manager.addChat(1, friendInfo, chatInfo, true);
         });
     }
 
@@ -178,15 +176,20 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
 
     @Override
     public void run() {
+        // DOING: Real Send, Display Synchronize
         while (Manager.chatAcitivtyCheckNetworkThreadFlag) {
-            Manager.checkFriendNetwork(friendInfo, status -> runOnUiThread(() -> messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송")));
+            Manager.checkFriendNetwork(friendInfo, ChatActivity::updateUI);
             try {
-                Thread.sleep(2000);
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
         Manager.chatAcitivtyCheckNetworkThreadFlag = true;
+    }
+
+    public static void updateUI(boolean status) {
+        new Handler().post(() -> messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송"));
     }
 
     @NonNull
