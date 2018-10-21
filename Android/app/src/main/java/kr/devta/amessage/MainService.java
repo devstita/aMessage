@@ -6,13 +6,24 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
 
 public class MainService extends Service {
+    DatabaseReference myDatabaseReference;
+    ChildEventListener myDatabaseReferenceEventListener;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -29,6 +40,75 @@ public class MainService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Manager.init(getApplicationContext());
         Manager.print("MainService.onCreate() -> Database Init Successful");
+
+        myDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone());
+        myDatabaseReferenceEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String[] keys = dataSnapshot.getKey().split(Manager.SEPARATOR);
+                String friendPhone = keys[0];
+                String message = dataSnapshot.getValue().toString();
+                long date = Long.valueOf(keys[1]);
+
+                dataSnapshot.getRef().removeValue();
+
+                FriendInfo friendInfo = null;
+                ArrayList<FriendInfo> friendInfos = Manager.readChatList();
+                for (FriendInfo curFriendInfo : friendInfos) {
+                    if (curFriendInfo.getPhone().equals(friendPhone)) {
+                        friendInfo = curFriendInfo;
+                        break;
+                    }
+                }
+
+                if (friendInfo == null) {
+                    String name = friendPhone;
+                    ArrayList<FriendInfo> contacts = Manager.getContacts(getApplicationContext());
+                    for (FriendInfo curFriendInfo : contacts) if (friendPhone.equals(curFriendInfo.getPhone())) {
+                        name = curFriendInfo.getName();
+                        break;
+                    }
+
+                    friendInfo = new FriendInfo(name, friendPhone);
+                    Manager.addChatList(friendInfo);
+                }
+                ChatInfo chatInfo = new ChatInfo(message, -date);
+
+                boolean actived = false;
+                if (ChatActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
+                    if (ChatActivity.adapter != null) {
+                        if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
+                            ChatActivity.adapter.addItem(chatInfo).refresh();
+                            actived = true;
+                        }
+                    }
+                } else if (MainActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
+                    MainActivity.updateUI();
+                }
+                Manager.addChat(-1, friendInfo, chatInfo, actived);
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        myDatabaseReference.addChildEventListener(myDatabaseReferenceEventListener);
 
         /////////////////////////////////////////////
         /// ||| Make impossible to task kill ||| ///
@@ -78,6 +158,7 @@ public class MainService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        myDatabaseReference.removeEventListener(myDatabaseReferenceEventListener);
         Manager.print("MainService.onDestroy() -> Database Destroy Successful");
     }
 }

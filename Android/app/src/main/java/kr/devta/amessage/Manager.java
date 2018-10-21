@@ -207,20 +207,10 @@ public class Manager {
         destReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int maxIdx = -1;
-                for (DataSnapshot curSnapshot : dataSnapshot.getChildren()) {
-                    String key = curSnapshot.getKey();
-                    char[] keyToChar = key.toCharArray();
-                    int curIdx = keyToChar[keyToChar.length - 1];
-                    if (curIdx > maxIdx) maxIdx = curIdx;
-                }
-
-                String curKey = Manager.getMyPhone() + (Manager.SEPARATOR) + String.valueOf((((maxIdx + 1) <= 0) ? 1 : maxIdx + 1));
-                String date = String.valueOf(Math.abs(chatInfo.getDateToLong()));
+                String curKey = (Manager.getMyPhone() + (Manager.SEPARATOR) + String.valueOf(Math.abs(chatInfo.getDateToLong())));
                 String message = chatInfo.getMessage();
 
-                destReference.child(curKey).setValue(date + (Manager.DATE_SEPARATOR) + message);
-//                Manager.print("Send with Network: " + message);
+                destReference.child(curKey).setValue(message);
             }
 
             @Override
@@ -239,6 +229,7 @@ public class Manager {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.getValue() == null) {
+                        Manager.print("Friend is NOT in DB");
                         method.run(false);
                     } else
                         method.run(dataSnapshot.getValue().equals("Connected"));
@@ -246,6 +237,7 @@ public class Manager {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Manager.print("Check Friend Network Status Cancelled..");
                     method.run(false);
                 }
             });

@@ -179,12 +179,12 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
     @Override
     public void run() {
         while (Manager.chatAcitivtyCheckNetworkThreadFlag) {
+            Manager.checkFriendNetwork(friendInfo, status -> runOnUiThread(() -> messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송")));
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            Manager.checkFriendNetwork(friendInfo, status -> runOnUiThread(() -> messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송")));
         }
         Manager.chatAcitivtyCheckNetworkThreadFlag = true;
     }
