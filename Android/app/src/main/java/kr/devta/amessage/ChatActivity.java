@@ -3,6 +3,7 @@ package kr.devta.amessage;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -176,7 +177,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
 
     @Override
     public void run() {
-        // DOING: Real Send, Display Synchronize
+        // DONE: Real Send, Display Synchronize
         while (Manager.chatAcitivtyCheckNetworkThreadFlag) {
             Manager.checkFriendNetwork(friendInfo, ChatActivity::updateUI);
             try {
@@ -189,7 +190,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
     }
 
     public static void updateUI(boolean status) {
-        new Handler().post(() -> messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송"));
+        new Handler(Looper.getMainLooper()).post(() -> messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송"));
     }
 
     @NonNull

@@ -28,11 +28,4 @@
         android:text="TextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:layout_marginTop="10dp"
-        android:background="#FFF"
-        app:layout_constraintTop_toBottomOf="@+id/chatingListViewItem_ChatTextView" />
 </android.support.constraint.ConstraintLayout>
