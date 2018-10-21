@@ -9,15 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -106,7 +102,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
 
         status = ActivityStatus.RESUMED;
         if (checkNetworkThread == null) checkNetworkThread = new Thread(this);
-        Manager.chatAcitivtyCheckNetworkThreadFlag = true;
+        Manager.chatActivityCheckNetworkThreadFlag = true;
         if (checkNetworkThread.getState() == Thread.State.NEW) checkNetworkThread.start();
 
         adapter.clear();
@@ -122,7 +118,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
         super.onPause();
 
         status = ActivityStatus.PAUSED;
-        Manager.chatAcitivtyCheckNetworkThreadFlag = false;
+        Manager.chatActivityCheckNetworkThreadFlag = false;
     }
 
     @Override
@@ -177,7 +173,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
 
     @Override
     public void run() {
-        while (Manager.chatAcitivtyCheckNetworkThreadFlag) {
+        while (Manager.chatActivityCheckNetworkThreadFlag) {
             Manager.checkFriendNetwork(friendInfo, ChatActivity::updateUI);
             try {
                 Thread.sleep(5000);
@@ -185,7 +181,7 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
                 e.printStackTrace();
             }
         }
-        Manager.chatAcitivtyCheckNetworkThreadFlag = true;
+        Manager.chatActivityCheckNetworkThreadFlag = true;
     }
 
     public static void updateUI(boolean status) {

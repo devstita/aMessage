@@ -55,7 +55,7 @@ public class Manager {
     public static final int REQUEST_CODE_CHAT_SETTING = 1004;
 
 //    PART: Thread Flag
-    public static boolean chatAcitivtyCheckNetworkThreadFlag = true;
+    public static boolean chatActivityCheckNetworkThreadFlag = true;
 
 //    PART: SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";
@@ -200,7 +200,6 @@ public class Manager {
         SmsManager.getDefault().sendTextMessage(friendInfo.getPhone(), null, chatInfo.getMessage(), null, null);
     }
 
-    // TODO: IF Message is NOT Delete, Send SMS
     private static void sendWithNetwork(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootReference = database.getReference();
