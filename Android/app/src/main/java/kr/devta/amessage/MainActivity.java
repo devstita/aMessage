@@ -8,6 +8,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.ListView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -16,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
     ListView chatListView;
     FloatingActionButton mainFloatingActionButton;
+    AdView adView;
 
     private static ChatListViewAdapter adapter;
 
@@ -25,11 +30,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Manager.initActivity(this);
 
+        // TODO: Develop Google Admob
+        Manager.print("App ID: " + getResources().getString(R.string.admob_app_id));
+        MobileAds.initialize(this, getResources().getString(R.string.admob_app_id));
+
         status = ActivityStatus.CREATED;
 
         toolbar = findViewById(R.id.main_Toolbar);
         chatListView = findViewById(R.id.main_ChatListView);
         mainFloatingActionButton = findViewById(R.id.main_MainFloatingActionButton);
+        adView = findViewById(R.id.main_AdView);
 
         adapter = new ChatListViewAdapter(getApplicationContext());
 
@@ -51,12 +61,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mainFloatingActionButton.setOnClickListener(v -> startActivityForResult(new Intent(getApplicationContext(), AddChatActivity.class), Manager.REQUEST_CODE_ADD_FRIEND));
+
+        adView.loadAd(new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         status = ActivityStatus.RESUMED;
+        if (adView != null) adView.resume();
         updateUI();
     }
 
@@ -64,12 +77,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         status = ActivityStatus.PAUSED;
+        if (adView != null) adView.pause();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         status = ActivityStatus.DESTROYED;
+        if (adView != null) adView.destroy();
     }
 
     public static void updateUI() {
