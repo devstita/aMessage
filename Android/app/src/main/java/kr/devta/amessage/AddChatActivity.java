@@ -2,9 +2,9 @@ package kr.devta.amessage;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,38 +37,35 @@ public class AddChatActivity extends AppCompatActivity {
 
         phoneEditText.setTransformationMethod(null); // Number Password remove * Character
 
-        doneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String innerName = nameEditText.getText().toString();
-                String innerPhone = phoneEditText.getText().toString().trim();
+        doneButton.setOnClickListener(v -> {
+            String innerName = nameEditText.getText().toString();
+            String innerPhone = phoneEditText.getText().toString().trim();
 
 //                Manager.print("AddChatActivity.DoneButtonClicked -> Name: " + innerName + ", Phone: " + innerPhone);
 
-                if (innerName == null || innerName.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), "Name Error", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (innerPhone == null || innerPhone.isEmpty()) {
-                    Toast.makeText(getApplicationContext(), "Phone Error", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (innerPhone.length() != PHONE_NUMBER_LENGTH || !(innerPhone.startsWith("010") || innerPhone.startsWith("011") || innerPhone.startsWith("012"))) {
-                    Toast.makeText(getApplicationContext(), "Phone Syntax Error", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                AddChatActivity.this.name = innerName;
-                AddChatActivity.this.phone = innerPhone;
-
-                Intent retIntent = new Intent();
-                retIntent.putExtra("Name", name);
-                retIntent.putExtra("Phone", phone);
-                setResult(RESULT_OK, retIntent);
-                finish();
+            if (innerName == null || innerName.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Name Error", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            if (innerPhone == null || innerPhone.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Phone Error", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (innerPhone.length() != PHONE_NUMBER_LENGTH || !(innerPhone.startsWith("010") || innerPhone.startsWith("011") || innerPhone.startsWith("012"))) {
+                Toast.makeText(getApplicationContext(), "Phone Syntax Error", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            AddChatActivity.this.name = innerName;
+            AddChatActivity.this.phone = innerPhone;
+
+            Intent retIntent = new Intent();
+            retIntent.putExtra("Name", name);
+            retIntent.putExtra("Phone", phone);
+            setResult(RESULT_OK, retIntent);
+            finish();
         });
 
         findFromContactButton.setOnClickListener(new View.OnClickListener() {

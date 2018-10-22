@@ -2,8 +2,6 @@ package kr.devta.amessage;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -17,9 +15,8 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class ChatActivity extends AppCompatActivity implements Runnable {
+public class ChatActivity extends AppCompatActivity {
     private static ActivityStatus status = null;
-    private Thread checkNetworkThread = null;
 
     Toolbar toolbar;
     ListView chatingListView;
@@ -36,7 +33,6 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
         Manager.initActivity(this);
 
         status = ActivityStatus.CREATED;
-        checkNetworkThread = new Thread(this);
 
         toolbar = findViewById(R.id.chat_Toolbar);
         chatingListView = findViewById(R.id.chat_ChatingListView);
@@ -45,8 +41,6 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
 
         friendInfo = (FriendInfo) getIntent().getSerializableExtra("FriendInfo");
         adapter = new ChatingListViewAdapter(getApplicationContext(), friendInfo);
-
-        checkNetworkThread.start();
 
         toolbar.setTitle(friendInfo.getName());
         toolbar.setSubtitle(" - " + friendInfo.getPhone());
@@ -99,11 +93,8 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
     @Override
     protected void onResume() {
         super.onResume();
-
         status = ActivityStatus.RESUMED;
-        if (checkNetworkThread == null) checkNetworkThread = new Thread(this);
-        Manager.chatActivityCheckNetworkThreadFlag = true;
-        if (checkNetworkThread.getState() == Thread.State.NEW) checkNetworkThread.start();
+        Manager.startUpdateFriendNetworkStatus(friendInfo);
 
         adapter.clear();
         ArrayList<ChatInfo> chats = Manager.readChat(friendInfo);
@@ -116,9 +107,8 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
     @Override
     protected void onPause() {
         super.onPause();
-
         status = ActivityStatus.PAUSED;
-        Manager.chatActivityCheckNetworkThreadFlag = false;
+        Manager.stopUpdateFriendNetworkStatus(friendInfo);
     }
 
     @Override
@@ -171,21 +161,8 @@ public class ChatActivity extends AppCompatActivity implements Runnable {
         }
     }
 
-    @Override
-    public void run() {
-        while (Manager.chatActivityCheckNetworkThreadFlag) {
-            Manager.checkFriendNetwork(friendInfo, ChatActivity::updateUI);
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        Manager.chatActivityCheckNetworkThreadFlag = true;
-    }
-
-    public static void updateUI(boolean status) {
-        new Handler(Looper.getMainLooper()).post(() -> messageEditText.setHint((status) ? "aMessage 로 전송" : "SMS 로 전송"));
+    public static void updateUI() {
+        messageEditText.setHint((Manager.friendNetworkStatus) ? "aMessage 로 전송" : "SMS 로 전송");
     }
 
     @NonNull

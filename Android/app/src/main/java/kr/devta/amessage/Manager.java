@@ -23,7 +23,6 @@ import android.support.annotation.NonNull;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -39,7 +38,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Manager {
-//    PART: Init Method And Variable
+    //    PART: Init Method And Variable
     private static Context context;
 
     public static void init(Context context) {
@@ -47,17 +46,14 @@ public class Manager {
         Manager.context = context;
     }
 
-//    PART: Intent Request Code
+    //    PART: Intent Request Code
     public static final int REQUEST_CODE_FIREBASE_LOGIN = 1000;
     public static final int REQUEST_CODE_ADD_FRIEND = 1001;
     public static final int REQUEST_CODE_CONTACT_INTENT = 1002;
     public static final int REQUEST_CODE_CHAT = 1003;
     public static final int REQUEST_CODE_CHAT_SETTING = 1004;
 
-//    PART: Thread Flag
-    public static boolean chatActivityCheckNetworkThreadFlag = true;
-
-//    PART: SharedPreferences
+    //    PART: SharedPreferences
     public static final String NAME_TUTORIAL = "Name_Tutorial";
     public static final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
 
@@ -79,7 +75,7 @@ public class Manager {
         for (String curKey : keys) removeSharedPreferencesToKey(name, curKey);
     }
 
-//    PART: Chat Management
+    //    PART: Chat Management
     public static void addChatList(FriendInfo friendInfo) {
         Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
@@ -183,17 +179,32 @@ public class Manager {
         notificationManager.notify(1000, builder.build());
     }
 
-//    PART: Networking And SMS
+    //    PART: Networking And SMS
     public static boolean friendNetworkStatus = false;
+    private static ValueEventListener friendNetworkStatusEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (dataSnapshot.getValue() == null) {
+                Manager.print("Friend is NOT in DB");
+                friendNetworkStatus = false;
+            } else {
+                friendNetworkStatus = dataSnapshot.getValue().equals("Connected");
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+            Manager.print("Check Friend Network Status Cancelled..");
+            friendNetworkStatus = false;
+        }
+    };
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
-        checkFriendNetwork(friendInfo, status -> {
-            if (status) {
-                sendWithNetwork(friendInfo, chatInfo);
-            } else {
-                sendWithSMS(friendInfo, chatInfo);
-            }
-        });
+        if (friendNetworkStatus) {
+            sendWithNetwork(friendInfo, chatInfo);
+        } else {
+            sendWithSMS(friendInfo, chatInfo);
+        }
     }
 
     private static void sendWithSMS(FriendInfo friendInfo, ChatInfo chatInfo) {
@@ -221,21 +232,21 @@ public class Manager {
         });
     }
 
-    public static void checkFriendNetwork(FriendInfo friendInfo, @NonNull final Method method) {
+    public static void startUpdateFriendNetworkStatus(FriendInfo friendInfo) {
         if (!checkNetworkConnect()) {
             Manager.print("Your Network is Disconnected");
-            method.run(false);
+            friendNetworkStatus = false;
         } else {
-            FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.getValue() == null) {
                         Manager.print("Friend is NOT in DB");
                         friendNetworkStatus = false;
-                        method.run(false);
+                        ChatActivity.updateUI();
                     } else {
                         friendNetworkStatus = dataSnapshot.getValue().equals("Connected");
-                        method.run(dataSnapshot.getValue().equals("Connected"));
+                        ChatActivity.updateUI();
                     }
                 }
 
@@ -243,10 +254,14 @@ public class Manager {
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     Manager.print("Check Friend Network Status Cancelled..");
                     friendNetworkStatus = false;
-                    method.run(false);
+                    ChatActivity.updateUI();
                 }
             });
         }
+    }
+
+    public static void stopUpdateFriendNetworkStatus(FriendInfo friendInfo) {
+        FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).removeEventListener(friendNetworkStatusEventListener);
     }
 
     //    PART: Utility Method
@@ -320,7 +335,7 @@ public class Manager {
         return builder;
     }
 
-//    PART: Etc Method And Variable
+    //    PART: Etc Method And Variable
     public static final String NONE = "[$ NONE $]";
     public static final String SEPARATOR = "_";
 
@@ -332,28 +347,17 @@ public class Manager {
     }
 
     public static void initActivity(Activity activity) {
-        print("Activity Created: " + activity.getClass().getSimpleName());
-        Manager.checkUpdate((status) -> {
-            if (status) Manager.print("Version: " + Manager.getVersionName() + ", is Last Version..!!");
-            else {
-                Manager.print("Version: " + Manager.getVersionName() + ", is NOT Last Version..ㅠㅠ");
-                Toast.makeText(activity.getApplicationContext(), "최신버전 아님..", Toast.LENGTH_SHORT).show();
-                activity.finish();
-            }
-        });
-    }
+        Manager.init(activity.getApplicationContext());
+        print("Activity Init: " + activity.getClass().getSimpleName());
 
-    public static void initActivity(Activity activity, Method method) {
-        print("Activity Created: " + activity.getClass().getSimpleName());
-        Manager.checkUpdate((status) -> {
-            method.run(status);
-            if (status) Manager.print("Version: " + Manager.getVersionName() + ", is Last Version..!!");
-            else {
-                Manager.print("Version: " + Manager.getVersionName() + ", is NOT Last Version..ㅠㅠ");
-                Toast.makeText(activity.getApplicationContext(), "최신버전 아님..", Toast.LENGTH_SHORT).show();
-                activity.finish();
+        if (!Manager.isServiceRunning(MainService.class)) {
+            Manager.print("MainService is not running");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                activity.getApplicationContext().startForegroundService(new Intent(activity.getApplicationContext(), MainService.class));
+            } else {
+                activity.getApplicationContext().startService(new Intent(activity.getApplicationContext(), MainService.class));
             }
-        });
+        }
     }
 
     public static long getCurrentTimeMills() {
@@ -373,31 +377,9 @@ public class Manager {
                 || (mobile.isAvailable() && mobile.isConnectedOrConnecting()));
     }
 
-    public static void checkUpdate(final Method toDo) {
-        if (!Manager.checkNetworkConnect()) toDo.run(true);
-        else {
-            FirebaseDatabase.getInstance().getReference().child("Management").child("Version").addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    String serverVersion = dataSnapshot.getValue().toString();
-                    Manager.print("Server Version: " + serverVersion);
-                    if (Manager.checkVersionIsLast(serverVersion)) { // Check My Version is last
-                        toDo.run(true);
-                    } else {
-                        toDo.run(false);
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    toDo.run(false);
-                }
-            });
-        }
-    }
-
-    public static boolean checkVersionIsLast(String versionName) {
-        return (getVersionName().equals(versionName));
+    // TODO: If it is NOT last version, stop Application
+    public static boolean checkUpdate(int versionCode) {
+        return (getVersionCode() >= versionCode);
     }
 
     public static String getVersionName() {
@@ -411,6 +393,19 @@ public class Manager {
         }
 
         return packageInfo.versionName;
+    }
+
+    public static int getVersionCode() {
+        PackageInfo packageInfo;
+
+        try{
+            packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+        }catch (PackageManager.NameNotFoundException e){
+            e.printStackTrace();
+            return 0;
+        }
+
+        return packageInfo.versionCode;
     }
 
     public static NullPointerException getNullPointerException() {

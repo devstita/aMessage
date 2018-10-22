@@ -23,25 +23,15 @@ public class SplashLogoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_logo);
-        Manager.init(getApplicationContext());
-        Manager.initActivity(this, status -> {
-            if (status) {
-                checkPermission();
-            }
-        });
+        Manager.initActivity(this);
+        checkPermission();
     }
 
     private void checkPermission() {
         PermissionListener permissionListener = new PermissionListener() {
             @Override
             public void onPermissionGranted() {
-                Manager.checkUpdate((status) -> {
-                    if (status) {
-                        login();
-                    } else {
-                        finish();
-                    }
-                });
+                login();
             }
 
             @Override
@@ -79,15 +69,6 @@ public class SplashLogoActivity extends AppCompatActivity {
     }
 
     private void done() {
-        if (!Manager.isServiceRunning(MainService.class)) {
-            Manager.print("MainService is not running");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(new Intent(getApplicationContext(), MainService.class));
-            } else {
-                startService(new Intent(getApplicationContext(), MainService.class));
-            }
-        }
-
 //        startActivity(new Intent(getApplicationContext(), TutorialActivity.class));
         // TEMP: Test Mode (Without Tutorial)
         startActivity(new Intent(getApplicationContext(), MainActivity.class));

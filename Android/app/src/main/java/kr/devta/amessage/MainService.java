@@ -1,9 +1,7 @@
 package kr.devta.amessage;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -14,6 +12,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -22,8 +21,89 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 
 public class MainService extends Service {
-    DatabaseReference myDatabaseReference;
-    ChildEventListener myDatabaseReferenceEventListener;
+    private DatabaseReference myDatabaseReference;
+    private ChildEventListener myDatabaseReferenceEventListener = new ChildEventListener() {
+        @Override
+        public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            String[] keys = dataSnapshot.getKey().split(Manager.SEPARATOR);
+            String friendPhone = keys[0];
+            String message = dataSnapshot.getValue().toString();
+            long date = Long.valueOf(keys[1]);
+
+            dataSnapshot.getRef().removeValue();
+
+            FriendInfo friendInfo = null;
+            ArrayList<FriendInfo> friendInfos = Manager.readChatList();
+            for (FriendInfo curFriendInfo : friendInfos) {
+                if (curFriendInfo.getPhone().equals(friendPhone)) {
+                    friendInfo = curFriendInfo;
+                    break;
+                }
+            }
+
+            if (friendInfo == null) {
+                String name = friendPhone;
+                ArrayList<FriendInfo> contacts = Manager.getContacts(getApplicationContext());
+                for (FriendInfo curFriendInfo : contacts) if (friendPhone.equals(curFriendInfo.getPhone())) {
+                    name = curFriendInfo.getName();
+                    break;
+                }
+
+                friendInfo = new FriendInfo(name, friendPhone);
+                Manager.addChatList(friendInfo);
+            }
+            ChatInfo chatInfo = new ChatInfo(message, -date);
+
+            boolean actived = false;
+            if (ChatActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
+                if (ChatActivity.adapter != null) {
+                    if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
+                        ChatActivity.adapter.addItem(chatInfo).refresh();
+                        actived = true;
+                    }
+                }
+            } else if (MainActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
+                MainActivity.updateUI();
+            }
+            Manager.addChat(-1, friendInfo, chatInfo, actived);
+        }
+
+        @Override
+        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+        }
+
+        @Override
+        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
+
+    private DatabaseReference versionDatabaseReference;
+    private ValueEventListener versionDatabaseReferenceEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            if (!Manager.checkUpdate(Integer.valueOf(dataSnapshot.getValue().toString()))) {
+                stopForeground(true);
+                stopSelf();
+            }
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    };
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -42,73 +122,10 @@ public class MainService extends Service {
         Manager.print("MainService.onCreate() -> Database Init Successful");
 
         myDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone());
-        myDatabaseReferenceEventListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                String[] keys = dataSnapshot.getKey().split(Manager.SEPARATOR);
-                String friendPhone = keys[0];
-                String message = dataSnapshot.getValue().toString();
-                long date = Long.valueOf(keys[1]);
+        versionDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Management/VersionCode");
 
-                dataSnapshot.getRef().removeValue();
-
-                FriendInfo friendInfo = null;
-                ArrayList<FriendInfo> friendInfos = Manager.readChatList();
-                for (FriendInfo curFriendInfo : friendInfos) {
-                    if (curFriendInfo.getPhone().equals(friendPhone)) {
-                        friendInfo = curFriendInfo;
-                        break;
-                    }
-                }
-
-                if (friendInfo == null) {
-                    String name = friendPhone;
-                    ArrayList<FriendInfo> contacts = Manager.getContacts(getApplicationContext());
-                    for (FriendInfo curFriendInfo : contacts) if (friendPhone.equals(curFriendInfo.getPhone())) {
-                        name = curFriendInfo.getName();
-                        break;
-                    }
-
-                    friendInfo = new FriendInfo(name, friendPhone);
-                    Manager.addChatList(friendInfo);
-                }
-                ChatInfo chatInfo = new ChatInfo(message, -date);
-
-                boolean actived = false;
-                if (ChatActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
-                    if (ChatActivity.adapter != null) {
-                        if (ChatActivity.adapter.getFriendInfo().getPhone().equals(friendInfo.getPhone())) {
-                            ChatActivity.adapter.addItem(chatInfo).refresh();
-                            actived = true;
-                        }
-                    }
-                } else if (MainActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
-                    MainActivity.updateUI();
-                }
-                Manager.addChat(-1, friendInfo, chatInfo, actived);
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
         myDatabaseReference.addChildEventListener(myDatabaseReferenceEventListener);
+        versionDatabaseReference.addValueEventListener(versionDatabaseReferenceEventListener);
 
         /////////////////////////////////////////////
         /// ||| Make impossible to task kill ||| ///
@@ -159,6 +176,7 @@ public class MainService extends Service {
     public void onDestroy() {
         super.onDestroy();
         myDatabaseReference.removeEventListener(myDatabaseReferenceEventListener);
+        versionDatabaseReference.removeEventListener(versionDatabaseReferenceEventListener);
         Manager.print("MainService.onDestroy() -> Database Destroy Successful");
     }
 }

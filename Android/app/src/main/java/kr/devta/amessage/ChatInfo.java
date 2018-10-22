@@ -12,7 +12,7 @@ public class ChatInfo implements Serializable {
     public ChatInfo(String message, long date) {
         this.message = message;
         this.date = date;
-       }
+    }
 
     public ChatInfo(String message) {
         this.message = message;

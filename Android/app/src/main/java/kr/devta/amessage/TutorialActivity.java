@@ -1,12 +1,11 @@
 package kr.devta.amessage;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 
-// TODO: Design Tutorial
+// aTODO: Design Tutorial
 public class TutorialActivity extends AppCompatActivity {
     Button skipTutorialButton;
 

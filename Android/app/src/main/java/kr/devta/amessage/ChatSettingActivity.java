@@ -1,12 +1,11 @@
 package kr.devta.amessage;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -34,15 +33,12 @@ public class ChatSettingActivity extends AppCompatActivity {
         changeFriendNameEditText.setText(friendInfo.getName());
         changeFriendNameEditText.setHint(nameWhenEmpty);
 
-        removeChatingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Manager.removeChat(friendInfo);
-                Intent result = new Intent();
-                result.putExtra("Action", "Remove");
-                setResult(RESULT_OK, result);
-                finish();
-            }
+        removeChatingButton.setOnClickListener(v -> {
+            Manager.removeChat(friendInfo);
+            Intent result = new Intent();
+            result.putExtra("Action", "Remove");
+            setResult(RESULT_OK, result);
+            finish();
         });
 
         changeFriendNameButton.setOnClickListener(new View.OnClickListener() {
