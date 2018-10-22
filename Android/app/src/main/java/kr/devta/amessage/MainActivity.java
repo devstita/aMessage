@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Manager.initActivity(this);
 
-        // TODO: Develop Google Admob
+        // DOING: Develop Google AdMob
         Manager.print("App ID: " + getResources().getString(R.string.admob_app_id));
         MobileAds.initialize(this, getResources().getString(R.string.admob_app_id));
 
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         mainFloatingActionButton.setOnClickListener(v -> startActivityForResult(new Intent(getApplicationContext(), AddChatActivity.class), Manager.REQUEST_CODE_ADD_FRIEND));
 
-        adView.loadAd(new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build());
+        adView.loadAd(new AdRequest.Builder().addTestDevice("0D517E41791F84A065FAF47E3401EB43").build());
     }
 
     @Override
