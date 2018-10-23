@@ -1,6 +1,8 @@
 package kr.devta.amessage;
 
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +20,8 @@ import java.util.ArrayList;
 public class ChatActivity extends AppCompatActivity {
     private static ActivityStatus status = null;
 
+    private NetworkBroadcastReceiver networkBroadcastReceiver;
+
     Toolbar toolbar;
     ListView chatingListView;
     private static EditText messageEditText;
@@ -33,6 +37,8 @@ public class ChatActivity extends AppCompatActivity {
         Manager.initActivity(this);
 
         status = ActivityStatus.CREATED;
+
+        networkBroadcastReceiver = new NetworkBroadcastReceiver();
 
         toolbar = findViewById(R.id.chat_Toolbar);
         chatingListView = findViewById(R.id.chat_ChatingListView);
@@ -96,6 +102,11 @@ public class ChatActivity extends AppCompatActivity {
         status = ActivityStatus.RESUMED;
         Manager.startUpdateFriendNetworkStatus(friendInfo);
 
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkBroadcastReceiver, intentFilter);
+        Manager.updateNetworkConnectNow();
+
         adapter.clear();
         ArrayList<ChatInfo> chats = Manager.readChat(friendInfo);
         for (ChatInfo chat : chats) {
@@ -108,6 +119,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         status = ActivityStatus.PAUSED;
+        unregisterReceiver(networkBroadcastReceiver);
         Manager.stopUpdateFriendNetworkStatus(friendInfo);
     }
 
@@ -162,7 +174,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public static void updateUI() {
-        messageEditText.setHint((Manager.friendNetworkStatus) ? "aMessage 로 전송" : "SMS 로 전송");
+        Manager.print("updateUI() -> my: " + Manager.myNetworkStatus + ", friend: " + Manager.friendNetworkStatus);
+        messageEditText.setHint((Manager.myNetworkStatus && Manager.friendNetworkStatus) ? "aMessage 로 전송" : "SMS 로 전송");
     }
 
     @NonNull

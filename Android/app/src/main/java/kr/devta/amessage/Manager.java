@@ -180,15 +180,26 @@ public class Manager {
     }
 
     //    PART: Networking And SMS
+    private static final int TYPE_WIFI = 1;
+    private static final int TYPE_MOBILE = 2;
+    private static final int TYPE_NOT_CONNECTED = 0;
+    private static final int NETWORK_STATUS_NOT_CONNECTED = 0;
+    private static final int NETWORK_STATUS_WIFI = 1;
+    private static final int NETWORK_STATUS_MOBILE = 2;
+
+    public static boolean myNetworkStatus = false;
     public static boolean friendNetworkStatus = false;
+
     private static ValueEventListener friendNetworkStatusEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (dataSnapshot.getValue() == null) {
                 Manager.print("Friend is NOT in DB");
                 friendNetworkStatus = false;
+                ChatActivity.updateUI();
             } else {
                 friendNetworkStatus = dataSnapshot.getValue().equals("Connected");
+                ChatActivity.updateUI();
             }
         }
 
@@ -196,11 +207,12 @@ public class Manager {
         public void onCancelled(@NonNull DatabaseError databaseError) {
             Manager.print("Check Friend Network Status Cancelled..");
             friendNetworkStatus = false;
+            ChatActivity.updateUI();
         }
     };
 
     public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
-        if (friendNetworkStatus) {
+        if (myNetworkStatus && friendNetworkStatus) {
             sendWithNetwork(friendInfo, chatInfo);
         } else {
             sendWithSMS(friendInfo, chatInfo);
@@ -232,31 +244,47 @@ public class Manager {
         });
     }
 
+    private static int getConnectivityStatus(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (null != activeNetwork) {
+            if(activeNetwork.getType() == ConnectivityManager.TYPE_WIFI)
+                return TYPE_WIFI;
+
+            if(activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE)
+                return TYPE_MOBILE;
+        }
+        return TYPE_NOT_CONNECTED;
+    }
+
+    private static int getConnectivityStatusString(Context context) {
+        int conn = Manager.getConnectivityStatus(context);
+        int status = 0;
+        if (conn == Manager.TYPE_WIFI) {
+            status = NETWORK_STATUS_WIFI;
+        } else if (conn == Manager.TYPE_MOBILE) {
+            status = NETWORK_STATUS_MOBILE;
+        } else if (conn == Manager.TYPE_NOT_CONNECTED) {
+            status = NETWORK_STATUS_NOT_CONNECTED;
+        }
+        return status;
+    }
+
+    private static boolean isNetworkConnected(Context context) {
+        return (getConnectivityStatusString(context) != NETWORK_STATUS_NOT_CONNECTED);
+    }
+
+    public static void updateNetworkStatus(Context context) {
+        myNetworkStatus = isNetworkConnected(context);
+    }
+
     public static void startUpdateFriendNetworkStatus(FriendInfo friendInfo) {
-        if (!checkNetworkConnect()) {
+        if (!myNetworkStatus) {
             Manager.print("Your Network is Disconnected");
             friendNetworkStatus = false;
         } else {
-            FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.getValue() == null) {
-                        Manager.print("Friend is NOT in DB");
-                        friendNetworkStatus = false;
-                        ChatActivity.updateUI();
-                    } else {
-                        friendNetworkStatus = dataSnapshot.getValue().equals("Connected");
-                        ChatActivity.updateUI();
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    Manager.print("Check Friend Network Status Cancelled..");
-                    friendNetworkStatus = false;
-                    ChatActivity.updateUI();
-                }
-            });
+            FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).addValueEventListener(friendNetworkStatusEventListener);
         }
     }
 
@@ -366,7 +394,7 @@ public class Manager {
         return ret;
     }
 
-    public static boolean checkNetworkConnect() {
+    public static boolean checkNetworkConnectNow() {
         if (context == null) throw getNullPointerException();
 
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -375,6 +403,11 @@ public class Manager {
 
         return ((wifi.isAvailable() && wifi.isConnectedOrConnecting())
                 || (mobile.isAvailable() && mobile.isConnectedOrConnecting()));
+    }
+
+    public static void updateNetworkConnectNow() {
+        myNetworkStatus = checkNetworkConnectNow();
+        ChatActivity.updateUI();
     }
 
     // TODO: If it is NOT last version, stop Application

@@ -15,21 +15,18 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // TODO_NONE: This method is called when the BroadcastReceiver is receiving
-        // an Intent broadcast.
-        // throw new UnsupportedOperationException("Not yet implemented");
-
-//        Manager.print("Something is received: " + intent.getAction());
-        Manager.init(context);
-
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(new Intent(context, MainService.class));
-            } else {
-                context.startService(new Intent(context, MainService.class));
+        if (intent.getAction() == null) return;
+        if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")
+                || intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(new Intent(context, MainService.class));
+                } else {
+                    context.startService(new Intent(context, MainService.class));
+                }
             }
         }
-//        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
+
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
@@ -51,15 +48,14 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
                     }
                 }
 
-//                Manager.print("Catch SMS: From " + senderPhone + ", " + message);
-
                 if (friendInfo == null) {
                     String name = senderPhone;
                     ArrayList<FriendInfo> contacts = Manager.getContacts(context);
-                    for (FriendInfo curFriendInfo : contacts) if (senderPhone.equals(curFriendInfo.getPhone())) {
-                        name = curFriendInfo.getName();
-                        break;
-                    }
+                    for (FriendInfo curFriendInfo : contacts)
+                        if (senderPhone.equals(curFriendInfo.getPhone())) {
+                            name = curFriendInfo.getName();
+                            break;
+                        }
 
                     friendInfo = new FriendInfo(name, senderPhone);
                     Manager.addChatList(friendInfo);
