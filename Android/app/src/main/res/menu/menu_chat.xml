@@ -4,9 +4,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/chatMenu_Information"
-        android:icon="@android:drawable/ic_menu_add"
+        android:id="@+id/chatMenu_Settings"
+        android:icon="@drawable/settings"
         android:title="Information"
-        app:showAsAction="always" />
+        app:showAsAction="always"
+        android:iconTint="@color/text"/>
 
 </menu>

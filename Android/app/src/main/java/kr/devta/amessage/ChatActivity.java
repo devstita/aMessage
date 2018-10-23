@@ -130,7 +130,7 @@ public class ChatActivity extends AppCompatActivity {
             case android.R.id.home:
                 finish();
                 break;
-            case R.id.chatMenu_Information:
+            case R.id.chatMenu_Settings:
                 Intent intent = new Intent(getApplicationContext(), ChatSettingActivity.class);
                 intent.putExtra("FriendInfo", friendInfo);
                 startActivityForResult(intent, Manager.REQUEST_CODE_CHAT_SETTING);
