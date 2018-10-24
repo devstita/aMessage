@@ -38,73 +38,80 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Manager {
-    //    PART: Init Method And Variable
-    private static Context context;
+    //    PART: Singleton
+    private static Manager instance = new Manager();
+    private Manager() { }
+    public static Manager getInstance() {
+        return instance;
+    }
 
-    public static void init(Context context) {
-//        Manager.print("Manager.init()");
-        Manager.context = context;
+    //    PART: Init Method And Variable
+    private Context context;
+
+    public void init(Context context) {
+//       print("Manager.getInstance().init()");
+       this.context = context;
     }
 
     //    PART: Intent Request Code
-    public static final int REQUEST_CODE_FIREBASE_LOGIN = 1000;
-    public static final int REQUEST_CODE_ADD_FRIEND = 1001;
-    public static final int REQUEST_CODE_CONTACT_INTENT = 1002;
-    public static final int REQUEST_CODE_CHAT = 1003;
-    public static final int REQUEST_CODE_CHAT_SETTING = 1004;
+    public final int REQUEST_CODE_FIREBASE_LOGIN = 1000;
+    public final int REQUEST_CODE_ADD_FRIEND = 1001;
+    public final int REQUEST_CODE_CONTACT_INTENT = 1002;
+    public final int REQUEST_CODE_CHAT = 1003;
+    public final int REQUEST_CODE_CHAT_SETTING = 1004;
 
     //    PART: SharedPreferences
-    public static final String NAME_TUTORIAL = "Name_Tutorial";
-    public static final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
+    public final String NAME_TUTORIAL = "Name_Tutorial";
+    public final String KEY_SAW_TUTORIAL = "Key_SawTutorial";
 
-    public static final String NAME_CHAT_LIST = "Name_ChatList";
+    public final String NAME_CHAT_LIST = "Name_ChatList";
 
-    public static final String NAME_CHAT_SEPARATOR = "[$ NAME_CHAT $]";
-    public static final String KEY_CHAT_SENDER_SEPARATOR = "$"; // $: Expression Symbol, \\$: String Symbol ( = java.util.regex.Pattern.quote("$")
+    public final String NAME_CHAT_SEPARATOR = "[$ NAME_CHAT $]";
+    public final String KEY_CHAT_SENDER_SEPARATOR = "$"; // $: Expression Symbol, \\$: String Symbol ( = java.util.regex.Pattern.quote("$")
 
-    public static SharedPreferences getSharedPreferences(String name) {
-        return Manager.context.getSharedPreferences(name, Context.MODE_PRIVATE);
+    public SharedPreferences getSharedPreferences(String name) {
+        return context.getSharedPreferences(name, Context.MODE_PRIVATE);
     }
 
-    public static void removeSharedPreferencesToKey(String name, String key) {
-        Manager.getSharedPreferences(name).edit().remove(key).apply();
+    public void removeSharedPreferencesToKey(String name, String key) {
+       getSharedPreferences(name).edit().remove(key).apply();
     }
 
-    public static void removeSharedPreferences(String name) {
-        Set<String> keys = Manager.getSharedPreferences(name).getAll().keySet();
+    public void removeSharedPreferences(String name) {
+        Set<String> keys =getSharedPreferences(name).getAll().keySet();
         for (String curKey : keys) removeSharedPreferencesToKey(name, curKey);
     }
 
     //    PART: Chat Management
-    public static void addChatList(FriendInfo friendInfo) {
-        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
+    public void addChatList(FriendInfo friendInfo) {
+       getSharedPreferences(NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), friendInfo.getName()).apply();
     }
 
-    public static void addChat(int sender, FriendInfo friendInfo, ChatInfo chatInfo, boolean actived) { // sender -> 1: Me, -1: Friend
-        Manager.getSharedPreferences((Manager.NAME_CHAT_SEPARATOR) + friendInfo.getPhone()).edit().putString(
-                ((sender == 1) ? Manager.getMyPhone() : friendInfo.getPhone()) + (Manager.KEY_CHAT_SENDER_SEPARATOR) + String.valueOf(chatInfo.getDateToLong())
+    public void addChat(int sender, FriendInfo friendInfo, ChatInfo chatInfo, boolean actived) { // sender -> 1: Me, -1: Friend
+       getSharedPreferences((NAME_CHAT_SEPARATOR) + friendInfo.getPhone()).edit().putString(
+                ((sender == 1) ?getMyPhone() : friendInfo.getPhone()) + (KEY_CHAT_SENDER_SEPARATOR) + String.valueOf(chatInfo.getDateToLong())
                 , chatInfo.getMessage()).apply();
-        if (sender == -1 && !actived) Manager.makeNotification(friendInfo, chatInfo);
+        if (sender == -1 && !actived)makeNotification(friendInfo, chatInfo);
     }
 
-    public static void changeFriendName(FriendInfo friendInfo, String name) {
-        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), name).apply();
+    public void changeFriendName(FriendInfo friendInfo, String name) {
+       getSharedPreferences(NAME_CHAT_LIST).edit().putString(friendInfo.getPhone(), name).apply();
     }
 
-    public static FriendInfo getUpdatedFriendInfo(FriendInfo friendInfo) {
-        String name = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getString(friendInfo.getPhone(), friendInfo.getName());
+    public FriendInfo getUpdatedFriendInfo(FriendInfo friendInfo) {
+        String name =getSharedPreferences(NAME_CHAT_LIST).getString(friendInfo.getPhone(), friendInfo.getName());
         return (new FriendInfo(name, friendInfo.getPhone()));
     }
 
-    public static void removeChat(FriendInfo friendInfo) {
-        Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).edit().remove(friendInfo.getPhone()).apply();
-        Manager.removeSharedPreferences((Manager.NAME_CHAT_SEPARATOR) + friendInfo.getPhone());
+    public void removeChat(FriendInfo friendInfo) {
+       getSharedPreferences(NAME_CHAT_LIST).edit().remove(friendInfo.getPhone()).apply();
+       removeSharedPreferences((NAME_CHAT_SEPARATOR) + friendInfo.getPhone());
     }
 
-    public static ArrayList<FriendInfo> readChatList() {
+    public ArrayList<FriendInfo> readChatList() {
         ArrayList<FriendInfo> ret = new ArrayList<>();
 
-        Map<String, ?> allDatas = Manager.getSharedPreferences(Manager.NAME_CHAT_LIST).getAll();
+        Map<String, ?> allDatas =getSharedPreferences(NAME_CHAT_LIST).getAll();
         Set<String> keys = allDatas.keySet();
 
         for (String curKey : keys) {
@@ -112,8 +119,8 @@ public class Manager {
         }
 
         Collections.sort(ret, (o1, o2) -> {
-            long o1LastChat = Manager.readLastChat(o1).getDateToLong();
-            long o2LastChat = Manager.readLastChat(o2).getDateToLong();
+            long o1LastChat =readLastChat(o1).getDateToLong();
+            long o2LastChat =readLastChat(o2).getDateToLong();
 
             return Collator.getInstance().compare(String.valueOf(o1LastChat), String.valueOf(o2LastChat));
         });
@@ -121,21 +128,21 @@ public class Manager {
         return ret;
     }
 
-    public static ArrayList<ChatInfo> readChat(FriendInfo friendInfo) {
+    public ArrayList<ChatInfo> readChat(FriendInfo friendInfo) {
         ArrayList<ChatInfo> ret = new ArrayList<>();
 
-        Map<String, ?> allDatas = Manager.getSharedPreferences((Manager.NAME_CHAT_SEPARATOR) + friendInfo.getPhone()).getAll();
+        Map<String, ?> allDatas =getSharedPreferences((NAME_CHAT_SEPARATOR) + friendInfo.getPhone()).getAll();
         Set<String> keys = allDatas.keySet();
 
         for (String curKey : keys) {
-//            Manager.print("CurKey: " + curKey);
-            String[] splitWithSeparator = curKey.split(Pattern.quote(Manager.KEY_CHAT_SENDER_SEPARATOR));
+//           print("CurKey: " + curKey);
+            String[] splitWithSeparator = curKey.split(Pattern.quote(KEY_CHAT_SENDER_SEPARATOR));
             String sender = (splitWithSeparator[0]);
             int senderInteger = (sender.equals(getMyPhone()) ? 1 : -1);
-//            Manager.print("Sender: " + sender + ", SenderInt: " + senderInteger);
+//           print("Sender: " + sender + ", SenderInt: " + senderInteger);
             String dateStr = (splitWithSeparator[1]);
             long date = ((senderInteger == 1) ? Math.abs(Long.valueOf(dateStr)) : -Math.abs(Long.valueOf(dateStr)));
-//            Manager.print("Add to ret: Message(" + allDatas.get(curKey).toString() + "), Date(" + date + ")");
+//           print("Add to ret: Message(" + allDatas.get(curKey).toString() + "), Date(" + date + ")");
             ret.add(new ChatInfo(allDatas.get(curKey).toString(), date));
         }
 
@@ -150,16 +157,16 @@ public class Manager {
     }
 
     // TODO: Develop Lighter (Have to Change Saving Algorithm)
-    public static ChatInfo readLastChat(FriendInfo friendInfo) {
+    public ChatInfo readLastChat(FriendInfo friendInfo) {
         ArrayList<ChatInfo> chats = readChat(friendInfo);
-        if (chats.size() <= 0) return new ChatInfo(Manager.NONE);
+        if (chats.size() <= 0) return new ChatInfo(NONE);
         return chats.get(chats.size() - 1);
     }
 
-    public static void makeNotification(FriendInfo friendInfo, ChatInfo chatInfo) {
+    public void makeNotification(FriendInfo friendInfo, ChatInfo chatInfo) {
         Intent chatIntent = new Intent(context, ChatActivity.class);
         chatIntent.putExtra("FriendInfo", friendInfo);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, Manager.REQUEST_CODE_CHAT,
+        PendingIntent pendingIntent = PendingIntent.getActivity(context,REQUEST_CODE_CHAT,
                 chatIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -174,27 +181,27 @@ public class Manager {
                 .setAutoCancel(true);
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O)
-            builder = Manager.makeNotificationChannel(builder);
+            builder =makeNotificationChannel(builder);
 
         notificationManager.notify(1000, builder.build());
     }
 
     //    PART: Networking And SMS
-    private static final int TYPE_WIFI = 1;
-    private static final int TYPE_MOBILE = 2;
-    private static final int TYPE_NOT_CONNECTED = 0;
-    private static final int NETWORK_STATUS_NOT_CONNECTED = 0;
-    private static final int NETWORK_STATUS_WIFI = 1;
-    private static final int NETWORK_STATUS_MOBILE = 2;
+    private final int TYPE_WIFI = 1;
+    private final int TYPE_MOBILE = 2;
+    private final int TYPE_NOT_CONNECTED = 0;
+    private final int NETWORK_STATUS_NOT_CONNECTED = 0;
+    private final int NETWORK_STATUS_WIFI = 1;
+    private final int NETWORK_STATUS_MOBILE = 2;
 
-    public static boolean myNetworkStatus = false;
-    public static boolean friendNetworkStatus = false;
+    public boolean myNetworkStatus = false;
+    public boolean friendNetworkStatus = false;
 
-    private static ValueEventListener friendNetworkStatusEventListener = new ValueEventListener() {
+    private ValueEventListener friendNetworkStatusEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             if (dataSnapshot.getValue() == null) {
-                Manager.print("Friend is NOT in DB");
+               print("Friend is NOT in DB");
                 friendNetworkStatus = false;
                 ChatActivity.updateUI();
             } else {
@@ -205,13 +212,13 @@ public class Manager {
 
         @Override
         public void onCancelled(@NonNull DatabaseError databaseError) {
-            Manager.print("Check Friend Network Status Cancelled..");
+           print("Check Friend Network Status Cancelled..");
             friendNetworkStatus = false;
             ChatActivity.updateUI();
         }
     };
 
-    public static void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
+    public void send(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         if (myNetworkStatus && friendNetworkStatus) {
             sendWithNetwork(friendInfo, chatInfo);
         } else {
@@ -219,11 +226,11 @@ public class Manager {
         }
     }
 
-    private static void sendWithSMS(FriendInfo friendInfo, ChatInfo chatInfo) {
+    private void sendWithSMS(FriendInfo friendInfo, ChatInfo chatInfo) {
         SmsManager.getDefault().sendTextMessage(friendInfo.getPhone(), null, chatInfo.getMessage(), null, null);
     }
 
-    private static void sendWithNetwork(final FriendInfo friendInfo, final ChatInfo chatInfo) {
+    private void sendWithNetwork(final FriendInfo friendInfo, final ChatInfo chatInfo) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference rootReference = database.getReference();
 
@@ -231,7 +238,7 @@ public class Manager {
         destReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String curKey = (Manager.getMyPhone() + (Manager.SEPARATOR) + String.valueOf(Math.abs(chatInfo.getDateToLong())));
+                String curKey = (getMyPhone() + (SEPARATOR) + String.valueOf(Math.abs(chatInfo.getDateToLong())));
                 String message = chatInfo.getMessage();
 
                 destReference.child(curKey).setValue(message);
@@ -244,7 +251,7 @@ public class Manager {
         });
     }
 
-    private static int getConnectivityStatus(Context context) {
+    private int getConnectivityStatus(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
@@ -258,49 +265,49 @@ public class Manager {
         return TYPE_NOT_CONNECTED;
     }
 
-    private static int getConnectivityStatusString(Context context) {
-        int conn = Manager.getConnectivityStatus(context);
+    private int getConnectivityStatusString(Context context) {
+        int conn =getConnectivityStatus(context);
         int status = 0;
-        if (conn == Manager.TYPE_WIFI) {
+        if (conn ==TYPE_WIFI) {
             status = NETWORK_STATUS_WIFI;
-        } else if (conn == Manager.TYPE_MOBILE) {
+        } else if (conn ==TYPE_MOBILE) {
             status = NETWORK_STATUS_MOBILE;
-        } else if (conn == Manager.TYPE_NOT_CONNECTED) {
+        } else if (conn ==TYPE_NOT_CONNECTED) {
             status = NETWORK_STATUS_NOT_CONNECTED;
         }
         return status;
     }
 
-    private static boolean isNetworkConnected(Context context) {
+    private boolean isNetworkConnected(Context context) {
         return (getConnectivityStatusString(context) != NETWORK_STATUS_NOT_CONNECTED);
     }
 
-    public static void updateNetworkStatus(Context context) {
+    public void updateNetworkStatus(Context context) {
         myNetworkStatus = isNetworkConnected(context);
     }
 
-    public static void startUpdateFriendNetworkStatus(FriendInfo friendInfo) {
+    public void startUpdateFriendNetworkStatus(FriendInfo friendInfo) {
         if (!myNetworkStatus) {
-            Manager.print("Your Network is Disconnected");
+           print("Your Network is Disconnected");
             friendNetworkStatus = false;
         } else {
             FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).addValueEventListener(friendNetworkStatusEventListener);
         }
     }
 
-    public static void stopUpdateFriendNetworkStatus(FriendInfo friendInfo) {
+    public void stopUpdateFriendNetworkStatus(FriendInfo friendInfo) {
         FirebaseDatabase.getInstance().getReference().child("Users").child(friendInfo.getPhone()).removeEventListener(friendNetworkStatusEventListener);
     }
 
     //    PART: Utility Method
-    public static boolean isServiceRunning(Class<?> sc) {
+    public boolean isServiceRunning(Class<?> sc) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE))
             if (sc.getName().equals(serviceInfo.service.getClassName())) return true;
         return false;
     }
 
-    public static boolean isServiceRunning(Context context, Class<?> sc) {
+    public boolean isServiceRunning(Context context, Class<?> sc) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo serviceInfo : activityManager.getRunningServices(Integer.MAX_VALUE))
             if (sc.getName().equals(serviceInfo.service.getClassName())) return true;
@@ -308,7 +315,7 @@ public class Manager {
     }
 
     @SuppressLint("MissingPermission")
-    public static String getMyPhone(Context context) {
+    public String getMyPhone(Context context) {
         String phone;
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         phone = telephonyManager.getLine1Number();
@@ -321,12 +328,12 @@ public class Manager {
 //        return "01099999999";
     }
 
-    public static String getMyPhone() {
+    public String getMyPhone() {
         if (context == null) throw getNullPointerException();
         return getMyPhone(context);
     }
 
-    public static ArrayList<FriendInfo> getContacts(Context context) {
+    public ArrayList<FriendInfo> getContacts(Context context) {
         ArrayList<FriendInfo> ret = new ArrayList<>();
 
         Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
@@ -343,20 +350,20 @@ public class Manager {
 
                 FriendInfo toAdd = new FriendInfo(name, phoneNumber);
                 ret.add(toAdd);
-//                Manager.print("Contact Added Item: " + name + ", " + phoneNumber);
+//               print("Contact Added Item: " + name + ", " + phoneNumber);
             } while (contactCursor.moveToNext());
         }
 
         return ret;
     }
 
-    public static Notification.Builder makeNotificationChannel(Notification.Builder builder) {
+    public Notification.Builder makeNotificationChannel(Notification.Builder builder) {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!Manager.getSharedPreferences(NOTIFICATION_CHANNEL_NAME).getBoolean(NOTIFICATION_CHANNEL_ID, false)) {
+            if (!getSharedPreferences(NOTIFICATION_CHANNEL_NAME).getBoolean(NOTIFICATION_CHANNEL_ID, false)) {
                 assert notificationManager != null;
                 notificationManager.createNotificationChannel(new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH));
-                Manager.getSharedPreferences(NOTIFICATION_CHANNEL_NAME).edit().putBoolean(NOTIFICATION_CHANNEL_ID, true).apply();
+               getSharedPreferences(NOTIFICATION_CHANNEL_NAME).edit().putBoolean(NOTIFICATION_CHANNEL_ID, true).apply();
             }
             builder.setChannelId("aMessage Notification ID");
         }
@@ -364,22 +371,22 @@ public class Manager {
     }
 
     //    PART: Etc Method And Variable
-    public static final String NONE = "[$ NONE $]";
-    public static final String SEPARATOR = "_";
+    public final String NONE = "[$ NONE $]";
+    public final String SEPARATOR = "_";
 
-    public static final String NOTIFICATION_CHANNEL_ID = "aMessage Notification ID";
-    public static final String NOTIFICATION_CHANNEL_NAME = "aMessage Notification";
+    public final String NOTIFICATION_CHANNEL_ID = "aMessage Notification ID";
+    public final String NOTIFICATION_CHANNEL_NAME = "aMessage Notification";
 
-    public static void print(String m) {
+    public void print(String m) {
         Log.d("AMESSAGE_DEBUG", m);
     }
 
-    public static void initActivity(Activity activity) {
-        Manager.init(activity.getApplicationContext());
+    public void initActivity(Activity activity) {
+       init(activity.getApplicationContext());
         print("Activity Init: " + activity.getClass().getSimpleName());
 
-        if (!Manager.isServiceRunning(MainService.class)) {
-            Manager.print("MainService is not running");
+        if (!isServiceRunning(MainService.class)) {
+           print("MainService is not running");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 activity.getApplicationContext().startForegroundService(new Intent(activity.getApplicationContext(), MainService.class));
             } else {
@@ -388,13 +395,13 @@ public class Manager {
         }
     }
 
-    public static long getCurrentTimeMills() {
+    public long getCurrentTimeMills() {
         long ret;
         ret = System.currentTimeMillis();
         return ret;
     }
 
-    public static boolean checkNetworkConnectNow() {
+    public boolean checkNetworkConnectNow() {
         if (context == null) throw getNullPointerException();
 
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -405,17 +412,17 @@ public class Manager {
                 || (mobile.isAvailable() && mobile.isConnectedOrConnecting()));
     }
 
-    public static void updateNetworkConnectNow() {
+    public void updateNetworkConnectNow() {
         myNetworkStatus = checkNetworkConnectNow();
         ChatActivity.updateUI();
     }
 
     // TODO: If it is NOT last version, stop Application
-    public static boolean checkUpdate(int versionCode) {
+    public boolean checkUpdate(int versionCode) {
         return (getVersionCode() >= versionCode);
     }
 
-    public static String getVersionName() {
+    public String getVersionName() {
         PackageInfo packageInfo;
 
         try{
@@ -428,7 +435,7 @@ public class Manager {
         return packageInfo.versionName;
     }
 
-    public static int getVersionCode() {
+    public int getVersionCode() {
         PackageInfo packageInfo;
 
         try{
@@ -441,7 +448,7 @@ public class Manager {
         return packageInfo.versionCode;
     }
 
-    public static NullPointerException getNullPointerException() {
-        return new NullPointerException("Manager.context is null");
+    public NullPointerException getNullPointerException() {
+        return new NullPointerException("Manager.getInstance().context is null");
     }
 }

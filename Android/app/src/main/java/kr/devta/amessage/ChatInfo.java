@@ -16,7 +16,7 @@ public class ChatInfo implements Serializable {
 
     public ChatInfo(String message) {
         this.message = message;
-        this.date = Manager.getCurrentTimeMills();
+        this.date = Manager.getInstance().getCurrentTimeMills();
     }
 
     public ChatInfo setMessage(String message) {

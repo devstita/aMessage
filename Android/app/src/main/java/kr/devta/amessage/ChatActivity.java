@@ -34,7 +34,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        Manager.initActivity(this);
+        Manager.getInstance().initActivity(this);
 
         status = ActivityStatus.CREATED;
 
@@ -66,7 +66,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (messageEditText.getText().toString().contains("\n")) {
-                    Manager.print("Enter key Clicked!!");
+                    Manager.getInstance().print("Enter key Clicked!!");
                     messageEditText.setText(messageEditText.getText().toString().replace("\n", ""));
                     sendButton.performClick();
                 } else {
@@ -89,10 +89,10 @@ public class ChatActivity extends AppCompatActivity {
 
             ChatInfo chatInfo = new ChatInfo(message);
 
-            Manager.send(friendInfo, chatInfo);
+            Manager.getInstance().send(friendInfo, chatInfo);
 
             adapter.addItem(chatInfo).refresh();
-            Manager.addChat(1, friendInfo, chatInfo, true);
+            Manager.getInstance().addChat(1, friendInfo, chatInfo, true);
         });
     }
 
@@ -100,15 +100,15 @@ public class ChatActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         status = ActivityStatus.RESUMED;
-        Manager.startUpdateFriendNetworkStatus(friendInfo);
+        Manager.getInstance().startUpdateFriendNetworkStatus(friendInfo);
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(networkBroadcastReceiver, intentFilter);
-        Manager.updateNetworkConnectNow();
+        Manager.getInstance().updateNetworkConnectNow();
 
         adapter.clear();
-        ArrayList<ChatInfo> chats = Manager.readChat(friendInfo);
+        ArrayList<ChatInfo> chats = Manager.getInstance().readChat(friendInfo);
         for (ChatInfo chat : chats) {
             adapter.addItem(chat);
         }
@@ -120,7 +120,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onPause();
         status = ActivityStatus.PAUSED;
         unregisterReceiver(networkBroadcastReceiver);
-        Manager.stopUpdateFriendNetworkStatus(friendInfo);
+        Manager.getInstance().stopUpdateFriendNetworkStatus(friendInfo);
     }
 
     @Override
@@ -145,7 +145,7 @@ public class ChatActivity extends AppCompatActivity {
             case R.id.chatMenu_Settings:
                 Intent intent = new Intent(getApplicationContext(), ChatSettingActivity.class);
                 intent.putExtra("FriendInfo", friendInfo);
-                startActivityForResult(intent, Manager.REQUEST_CODE_CHAT_SETTING);
+                startActivityForResult(intent, Manager.getInstance().REQUEST_CODE_CHAT_SETTING);
                 break;
             default:
                 break;
@@ -158,13 +158,13 @@ public class ChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Manager.REQUEST_CODE_CHAT_SETTING && resultCode == RESULT_OK) {
+        if (requestCode == Manager.getInstance().REQUEST_CODE_CHAT_SETTING && resultCode == RESULT_OK) {
             switch (data.getStringExtra("Action")) {
                 case "Remove":
                     finish();
                     break;
                 case "ChangeName":
-                    friendInfo = (Manager.getUpdatedFriendInfo(friendInfo));
+                    friendInfo = (Manager.getInstance().getUpdatedFriendInfo(friendInfo));
                     toolbar.setTitle(friendInfo.getName());
                     break;
                 default:
@@ -174,8 +174,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public static void updateUI() {
-        Manager.print("updateUI() -> my: " + Manager.myNetworkStatus + ", friend: " + Manager.friendNetworkStatus);
-        messageEditText.setHint((Manager.myNetworkStatus && Manager.friendNetworkStatus) ? "aMessage 로 전송" : "SMS 로 전송");
+        Manager.getInstance().print("updateUI() -> my: " + Manager.getInstance().myNetworkStatus + ", friend: " + Manager.getInstance().friendNetworkStatus);
+        messageEditText.setHint((Manager.getInstance().myNetworkStatus && Manager.getInstance().friendNetworkStatus) ? "aMessage 로 전송" : "SMS 로 전송");
     }
 
     @NonNull

@@ -43,10 +43,10 @@ public class ChatListViewAdapter extends BaseAdapter {
         TextView chatTextView = new TextView(context);
 
         String name = items.get(position).getName();
-        String chat = Manager.readLastChat(items.get(position)).getMessage();
-        int sender = ((Manager.readLastChat(items.get(position)).getDateToLong() > 0) ? 1 : -1);
+        String chat = Manager.getInstance().readLastChat(items.get(position)).getMessage();
+        int sender = ((Manager.getInstance().readLastChat(items.get(position)).getDateToLong() > 0) ? 1 : -1);
 
-        if (chat.equals(Manager.NONE)) chat = "";
+        if (chat.equals(Manager.getInstance().NONE)) chat = "";
 
         nameTextView.setText(name);
         nameTextView.setTextColor(ContextCompat.getColor(context, R.color.title));

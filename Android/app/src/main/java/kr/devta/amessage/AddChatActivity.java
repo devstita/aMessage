@@ -25,15 +25,15 @@ public class AddChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_chat);
-        Manager.initActivity(this);
+        Manager.getInstance().initActivity(this);
 
         nameEditText = findViewById(R.id.addChat_NameEditText);
         phoneEditText = findViewById(R.id.addChat_PhoneEditText);
         doneButton = findViewById(R.id.addChat_AddDoneButton);
         findFromContactButton = findViewById(R.id.addChat_FindFromContactButton);
 
-        name = Manager.NONE;
-        phone = Manager.NONE;
+        name = Manager.getInstance().NONE;
+        phone = Manager.getInstance().NONE;
 
         phoneEditText.setTransformationMethod(null); // Number Password remove * Character
 
@@ -41,7 +41,7 @@ public class AddChatActivity extends AppCompatActivity {
             String innerName = nameEditText.getText().toString();
             String innerPhone = phoneEditText.getText().toString().trim();
 
-//                Manager.print("AddChatActivity.DoneButtonClicked -> Name: " + innerName + ", Phone: " + innerPhone);
+//                Manager.getInstance().print("AddChatActivity.DoneButtonClicked -> Name: " + innerName + ", Phone: " + innerPhone);
 
             if (innerName == null || innerName.isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Name Error", Toast.LENGTH_SHORT).show();
@@ -73,7 +73,7 @@ public class AddChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent contactIntent = new Intent(Intent.ACTION_PICK);
                 contactIntent.setData(ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
-                startActivityForResult(contactIntent, Manager.REQUEST_CODE_CONTACT_INTENT);
+                startActivityForResult(contactIntent, Manager.getInstance().REQUEST_CODE_CONTACT_INTENT);
             }
         });
     }
@@ -82,7 +82,7 @@ public class AddChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Manager.REQUEST_CODE_CONTACT_INTENT && resultCode == RESULT_OK) {
+        if (requestCode == Manager.getInstance().REQUEST_CODE_CONTACT_INTENT && resultCode == RESULT_OK) {
             Cursor cursor = getContentResolver().query(data.getData()
                     , new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER}
                     , null, null, null);

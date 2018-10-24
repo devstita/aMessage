@@ -23,7 +23,7 @@ public class SplashLogoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_logo);
-        Manager.initActivity(this);
+        Manager.getInstance().initActivity(this);
         checkPermission();
     }
 
@@ -62,7 +62,7 @@ public class SplashLogoActivity extends AppCompatActivity {
     private void login() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.PhoneBuilder().build());
-            startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.REQUEST_CODE_FIREBASE_LOGIN);
+            startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(providers).build(), Manager.getInstance().REQUEST_CODE_FIREBASE_LOGIN);
         } else done();
         // TEMP: Test Mode (Without Real Device)
 //        done();
@@ -79,7 +79,7 @@ public class SplashLogoActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Manager.REQUEST_CODE_FIREBASE_LOGIN) {
+        if (requestCode == Manager.getInstance().REQUEST_CODE_FIREBASE_LOGIN) {
 //            IdpResponse response = IdpResponse.fromResultIntent(data);
             if (resultCode == RESULT_OK) {
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

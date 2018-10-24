@@ -21,11 +21,12 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 
 public class MainService extends Service {
+    // TODO: Receive Too much Message Error Solve
     private DatabaseReference myDatabaseReference;
     private ChildEventListener myDatabaseReferenceEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-            String[] keys = dataSnapshot.getKey().split(Manager.SEPARATOR);
+            String[] keys = dataSnapshot.getKey().split(Manager.getInstance().SEPARATOR);
             String friendPhone = keys[0];
             String message = dataSnapshot.getValue().toString();
             long date = Long.valueOf(keys[1]);
@@ -33,7 +34,7 @@ public class MainService extends Service {
             dataSnapshot.getRef().removeValue();
 
             FriendInfo friendInfo = null;
-            ArrayList<FriendInfo> friendInfos = Manager.readChatList();
+            ArrayList<FriendInfo> friendInfos = Manager.getInstance().readChatList();
             for (FriendInfo curFriendInfo : friendInfos) {
                 if (curFriendInfo.getPhone().equals(friendPhone)) {
                     friendInfo = curFriendInfo;
@@ -43,14 +44,14 @@ public class MainService extends Service {
 
             if (friendInfo == null) {
                 String name = friendPhone;
-                ArrayList<FriendInfo> contacts = Manager.getContacts(getApplicationContext());
+                ArrayList<FriendInfo> contacts = Manager.getInstance().getContacts(getApplicationContext());
                 for (FriendInfo curFriendInfo : contacts) if (friendPhone.equals(curFriendInfo.getPhone())) {
                     name = curFriendInfo.getName();
                     break;
                 }
 
                 friendInfo = new FriendInfo(name, friendPhone);
-                Manager.addChatList(friendInfo);
+                Manager.getInstance().addChatList(friendInfo);
             }
             ChatInfo chatInfo = new ChatInfo(message, -date);
 
@@ -65,7 +66,7 @@ public class MainService extends Service {
             } else if (MainActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
                 MainActivity.updateUI();
             }
-            Manager.addChat(-1, friendInfo, chatInfo, actived);
+            Manager.getInstance().addChat(-1, friendInfo, chatInfo, actived);
         }
 
         @Override
@@ -93,7 +94,7 @@ public class MainService extends Service {
     private ValueEventListener versionDatabaseReferenceEventListener = new ValueEventListener() {
         @Override
         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            if (!Manager.checkUpdate(Integer.valueOf(dataSnapshot.getValue().toString()))) {
+            if (!Manager.getInstance().checkUpdate(Integer.valueOf(dataSnapshot.getValue().toString()))) {
                 stopForeground(true);
                 stopSelf();
             }
@@ -118,10 +119,10 @@ public class MainService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Manager.init(getApplicationContext());
-        Manager.print("MainService.onCreate() -> Database Init Successful");
+        Manager.getInstance().init(getApplicationContext());
+        Manager.getInstance().print("MainService.onCreate() -> Database Init Successful");
 
-        myDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getMyPhone());
+        myDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getInstance().getMyPhone());
         versionDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Management/VersionCode");
 
         myDatabaseReference.addChildEventListener(myDatabaseReferenceEventListener);
@@ -132,8 +133,8 @@ public class MainService extends Service {
         /////////////////////////////////////////////
         Notification.Builder builder;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            builder = new Notification.Builder(getApplicationContext(), Manager.NOTIFICATION_CHANNEL_ID);
-            builder = Manager.makeNotificationChannel(builder);
+            builder = new Notification.Builder(getApplicationContext(), Manager.getInstance().NOTIFICATION_CHANNEL_ID);
+            builder = Manager.getInstance().makeNotificationChannel(builder);
         } else {
             builder = new Notification.Builder(getApplicationContext());
         }
@@ -153,15 +154,15 @@ public class MainService extends Service {
                 socket.connect();
 
                 socket.on(Socket.EVENT_CONNECT, args -> {
-                    Manager.print("Connected to Socket.IO Server");
-                    socket.emit("phone", Manager.getMyPhone());
+                    Manager.getInstance().print("Connected to Socket.IO Server");
+                    socket.emit("phone", Manager.getInstance().getMyPhone());
                 }).on(Socket.EVENT_RECONNECT, args -> {
-                    Manager.print("Re-Connected to Socket.IO Server");
-                    socket.emit("phone", Manager.getMyPhone());
-                }).on(Socket.EVENT_DISCONNECT, args -> Manager.print("Disconnected to Socket.IO Server"));
+                    Manager.getInstance().print("Re-Connected to Socket.IO Server");
+                    socket.emit("phone", Manager.getInstance().getMyPhone());
+                }).on(Socket.EVENT_DISCONNECT, args -> Manager.getInstance().print("Disconnected to Socket.IO Server"));
             } catch (URISyntaxException e) {
                 e.printStackTrace();
-                Manager.print("Error from Socket.IO");
+                Manager.getInstance().print("Error from Socket.IO");
             }
         }).start();
 
@@ -177,6 +178,6 @@ public class MainService extends Service {
         super.onDestroy();
         myDatabaseReference.removeEventListener(myDatabaseReferenceEventListener);
         versionDatabaseReference.removeEventListener(versionDatabaseReferenceEventListener);
-        Manager.print("MainService.onDestroy() -> Database Destroy Successful");
+        Manager.getInstance().print("MainService.onDestroy() -> Database Destroy Successful");
     }
 }

@@ -28,10 +28,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Manager.initActivity(this);
+        Manager.getInstance().initActivity(this);
 
         // DOING: Develop Google AdMob
-        Manager.print("App ID: " + getResources().getString(R.string.admob_app_id));
+        Manager.getInstance().print("App ID: " + getResources().getString(R.string.admob_app_id));
         MobileAds.initialize(this, getResources().getString(R.string.admob_app_id));
 
         status = ActivityStatus.CREATED;
@@ -50,17 +50,17 @@ public class MainActivity extends AppCompatActivity {
             FriendInfo friendInfo = adapter.getItem(position);
             Intent chatIntent = new Intent(getApplicationContext(), ChatActivity.class);
             chatIntent.putExtra("FriendInfo", friendInfo);
-            startActivityForResult(chatIntent, Manager.REQUEST_CODE_CHAT);
+            startActivityForResult(chatIntent, Manager.getInstance().REQUEST_CODE_CHAT);
         });
 
         chatListView.setOnItemLongClickListener((adapterView, view, position, id) -> {
             Intent intent = new Intent(getApplicationContext(), ChatSettingActivity.class);
             intent.putExtra("FriendInfo", adapter.getItem(position));
-            startActivityForResult(intent, Manager.REQUEST_CODE_CHAT_SETTING);
+            startActivityForResult(intent, Manager.getInstance().REQUEST_CODE_CHAT_SETTING);
             return false;
         });
 
-        mainFloatingActionButton.setOnClickListener(v -> startActivityForResult(new Intent(getApplicationContext(), AddChatActivity.class), Manager.REQUEST_CODE_ADD_FRIEND));
+        mainFloatingActionButton.setOnClickListener(v -> startActivityForResult(new Intent(getApplicationContext(), AddChatActivity.class), Manager.getInstance().REQUEST_CODE_ADD_FRIEND));
 
         adView.loadAd(new AdRequest.Builder().addTestDevice("0D517E41791F84A065FAF47E3401EB43").build());
     }
@@ -89,10 +89,10 @@ public class MainActivity extends AppCompatActivity {
 
     public static void updateUI() {
         adapter.clear();
-        ArrayList<FriendInfo> previousFriendArrayList = Manager.readChatList();
+        ArrayList<FriendInfo> previousFriendArrayList = Manager.getInstance().readChatList();
         for (FriendInfo friendInfo : previousFriendArrayList) {
             if (friendInfo != null) adapter.addItem(friendInfo);
-            else Manager.print("Item: Null");
+            else Manager.getInstance().print("Item: Null");
         }
         adapter.refresh();
     }
@@ -101,16 +101,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Manager.REQUEST_CODE_ADD_FRIEND && resultCode == RESULT_OK) {
+        if (requestCode == Manager.getInstance().REQUEST_CODE_ADD_FRIEND && resultCode == RESULT_OK) {
             String name = data.getStringExtra("Name");
             String phone = data.getStringExtra("Phone");
             FriendInfo friendInfo = new FriendInfo(name, phone);
-            Manager.addChatList(friendInfo);
+            Manager.getInstance().addChatList(friendInfo);
             adapter.addItem(friendInfo);
             adapter.refresh();
-        } else if (requestCode == Manager.REQUEST_CODE_CHAT && resultCode == RESULT_OK) {
+        } else if (requestCode == Manager.getInstance().REQUEST_CODE_CHAT && resultCode == RESULT_OK) {
             FriendInfo friendInfo = (FriendInfo) data.getSerializableExtra("FriendInfo");
-        } else if (requestCode == Manager.REQUEST_CODE_CHAT_SETTING && resultCode == RESULT_OK) {
+        } else if (requestCode == Manager.getInstance().REQUEST_CODE_CHAT_SETTING && resultCode == RESULT_OK) {
             switch (data.getStringExtra("Action")) {
                 case "Remove":
                 case "ChangeName":

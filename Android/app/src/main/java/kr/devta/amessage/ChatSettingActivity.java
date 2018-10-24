@@ -21,7 +21,7 @@ public class ChatSettingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_setting);
-        Manager.initActivity(this);
+        Manager.getInstance().initActivity(this);
 
         changeFriendNameEditText = findViewById(R.id.chatSetting_ChangeFriendNameEditText);
         removeChatingButton = findViewById(R.id.chatSetting_RemoveChatingButton);
@@ -34,7 +34,7 @@ public class ChatSettingActivity extends AppCompatActivity {
         changeFriendNameEditText.setHint(nameWhenEmpty);
 
         removeChatingButton.setOnClickListener(v -> {
-            Manager.removeChat(friendInfo);
+            Manager.getInstance().removeChat(friendInfo);
             Intent result = new Intent();
             result.putExtra("Action", "Remove");
             setResult(RESULT_OK, result);
@@ -48,7 +48,7 @@ public class ChatSettingActivity extends AppCompatActivity {
 
                 if (name.isEmpty()) name = nameWhenEmpty;
 
-                Manager.changeFriendName(friendInfo, name);
+                Manager.getInstance().changeFriendName(friendInfo, name);
                 Intent result = new Intent();
                 result.putExtra("Action", "ChangeName");
                 setResult(RESULT_OK, result);
@@ -56,7 +56,7 @@ public class ChatSettingActivity extends AppCompatActivity {
             }
         });
 
-        ArrayList<FriendInfo> readFromContcts = Manager.getContacts(getApplicationContext());
+        ArrayList<FriendInfo> readFromContcts = Manager.getInstance().getContacts(getApplicationContext());
         for (FriendInfo curFriendInfo : readFromContcts) if (friendInfo.getPhone().equals(curFriendInfo.getPhone())) {
             changeFriendNameEditText.setHint(curFriendInfo.getName());
             nameWhenEmpty = curFriendInfo.getName();

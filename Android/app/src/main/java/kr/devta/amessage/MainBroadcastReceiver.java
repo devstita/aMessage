@@ -40,7 +40,7 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
                 long time = smsMessage[0].getTimestampMillis();
 
                 FriendInfo friendInfo = null;
-                ArrayList<FriendInfo> friendInfos = Manager.readChatList();
+                ArrayList<FriendInfo> friendInfos = Manager.getInstance().readChatList();
                 for (FriendInfo curFriendInfo : friendInfos) {
                     if (curFriendInfo.getPhone().equals(senderPhone)) {
                         friendInfo = curFriendInfo;
@@ -50,7 +50,7 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
 
                 if (friendInfo == null) {
                     String name = senderPhone;
-                    ArrayList<FriendInfo> contacts = Manager.getContacts(context);
+                    ArrayList<FriendInfo> contacts = Manager.getInstance().getContacts(context);
                     for (FriendInfo curFriendInfo : contacts)
                         if (senderPhone.equals(curFriendInfo.getPhone())) {
                             name = curFriendInfo.getName();
@@ -58,7 +58,7 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
                         }
 
                     friendInfo = new FriendInfo(name, senderPhone);
-                    Manager.addChatList(friendInfo);
+                    Manager.getInstance().addChatList(friendInfo);
                 }
                 ChatInfo chatInfo = new ChatInfo(message, -time);
 
@@ -73,7 +73,7 @@ public class MainBroadcastReceiver extends BroadcastReceiver {
                 } else if (MainActivity.getActivityStatus().equals(ActivityStatus.RESUMED)) {
                     MainActivity.updateUI();
                 }
-                Manager.addChat(-1, friendInfo, chatInfo, actived);
+                Manager.getInstance().addChat(-1, friendInfo, chatInfo, actived);
             }
         }
     }
