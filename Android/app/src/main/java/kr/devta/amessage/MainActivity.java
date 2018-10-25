@@ -30,6 +30,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Manager.getInstance().initActivity(this);
 
+        if (getIntent().getExtras() != null && getIntent().getExtras().containsKey("FriendInfo")) {
+            Intent chatIntent = new Intent(getApplicationContext(), ChatActivity.class);
+            chatIntent.putExtra("FriendInfo", getIntent().getSerializableExtra("FriendInfo"));
+            startActivityForResult(chatIntent, Manager.getInstance().REQUEST_CODE_CHAT);
+        }
+
         // DOING: Develop Google AdMob
         Manager.getInstance().print("App ID: " + getResources().getString(R.string.admob_app_id));
         MobileAds.initialize(this, getResources().getString(R.string.admob_app_id));

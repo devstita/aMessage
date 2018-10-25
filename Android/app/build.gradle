@@ -57,6 +57,9 @@ dependencies {
     }
     implementation 'com.google.firebase:firebase-ads:17.0.0'
     implementation 'com.google.android.gms:play-services-ads:17.0.0'
+    api ('com.github.omadahealth:lollipin:2.1.0@aar') {
+        transitive = true
+    }
 }
 
 apply plugin: 'com.google.gms.google-services'

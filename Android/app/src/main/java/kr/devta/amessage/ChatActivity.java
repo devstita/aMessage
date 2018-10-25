@@ -94,6 +94,13 @@ public class ChatActivity extends AppCompatActivity {
             adapter.addItem(chatInfo).refresh();
             Manager.getInstance().addChat(1, friendInfo, chatInfo, true);
         });
+
+        adapter.clear();
+        ArrayList<ChatInfo> chats = Manager.getInstance().readChat(friendInfo);
+        for (ChatInfo chat : chats) {
+            adapter.addItem(chat);
+        }
+        adapter.refresh();
     }
 
     @Override
@@ -106,13 +113,6 @@ public class ChatActivity extends AppCompatActivity {
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(networkBroadcastReceiver, intentFilter);
         Manager.getInstance().updateNetworkConnectNow();
-
-        adapter.clear();
-        ArrayList<ChatInfo> chats = Manager.getInstance().readChat(friendInfo);
-        for (ChatInfo chat : chats) {
-            adapter.addItem(chat);
-        }
-        adapter.refresh();
     }
 
     @Override

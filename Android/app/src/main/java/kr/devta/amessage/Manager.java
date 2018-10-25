@@ -164,10 +164,10 @@ public class Manager {
     }
 
     public void makeNotification(FriendInfo friendInfo, ChatInfo chatInfo) {
-        Intent chatIntent = new Intent(context, ChatActivity.class);
-        chatIntent.putExtra("FriendInfo", friendInfo);
+        Intent mainIntent = new Intent(context, MainActivity.class);
+        mainIntent.putExtra("FriendInfo", friendInfo);
         PendingIntent pendingIntent = PendingIntent.getActivity(context,REQUEST_CODE_CHAT,
-                chatIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                mainIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification.Builder builder = new Notification.Builder(context)
