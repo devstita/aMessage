@@ -30,7 +30,7 @@
         android:layout_marginBottom="8dp"
         android:divider="@color/greyText"
         android:dividerHeight="2dp"
-        app:layout_constraintBottom_toTopOf="@+id/main_AdView"
+        app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,20 +44,7 @@
         android:layout_marginBottom="32dp"
         android:src="@drawable/ic_add_black_24dp"
         app:backgroundTint="#2d2d2d"
-        app:layout_constraintBottom_toTopOf="@+id/main_AdView"
+        app:layout_constraintBottom_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
-    <com.google.android.gms.ads.AdView xmlns:ads="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/main_AdView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        ads:adSize="BANNER"
-        ads:adUnitId="@string/admob_unit_main_banner_id"
-        ads:layout_constraintBottom_toBottomOf="parent"
-        ads:layout_constraintEnd_toEndOf="parent"
-        ads:layout_constraintStart_toStartOf="parent">
-    </com.google.android.gms.ads.AdView>
 
 </android.support.constraint.ConstraintLayout>

@@ -6,6 +6,8 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ListView;
 
 import com.google.android.gms.ads.AdRequest;
@@ -14,13 +16,13 @@ import com.google.android.gms.ads.MobileAds;
 
 import java.util.ArrayList;
 
+// TODO: Finger Print + PIN Authorization
 public class MainActivity extends AppCompatActivity {
     private static ActivityStatus status = null;
 
     Toolbar toolbar;
     ListView chatListView;
     FloatingActionButton mainFloatingActionButton;
-    AdView adView;
 
     private static ChatListViewAdapter adapter;
 
@@ -36,16 +38,11 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(chatIntent, Manager.getInstance().REQUEST_CODE_CHAT);
         }
 
-        // DOING: Develop Google AdMob
-        Manager.getInstance().print("App ID: " + getResources().getString(R.string.admob_app_id));
-        MobileAds.initialize(this, getResources().getString(R.string.admob_app_id));
-
         status = ActivityStatus.CREATED;
 
         toolbar = findViewById(R.id.main_Toolbar);
         chatListView = findViewById(R.id.main_ChatListView);
         mainFloatingActionButton = findViewById(R.id.main_MainFloatingActionButton);
-        adView = findViewById(R.id.main_AdView);
 
         adapter = new ChatListViewAdapter(getApplicationContext());
 
@@ -67,15 +64,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mainFloatingActionButton.setOnClickListener(v -> startActivityForResult(new Intent(getApplicationContext(), AddChatActivity.class), Manager.getInstance().REQUEST_CODE_ADD_FRIEND));
-
-        adView.loadAd(new AdRequest.Builder().addTestDevice("0D517E41791F84A065FAF47E3401EB43").build());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         status = ActivityStatus.RESUMED;
-        if (adView != null) adView.resume();
         updateUI();
     }
 
@@ -83,14 +77,32 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         status = ActivityStatus.PAUSED;
-        if (adView != null) adView.pause();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         status = ActivityStatus.DESTROYED;
-        if (adView != null) adView.destroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+//        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.mainMenu_Settings:
+                startActivity(new Intent(getApplicationContext(), ApplicationSettingsActivity.class));
+                break;
+            case R.id.mainMenu_Lock:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public static void updateUI() {

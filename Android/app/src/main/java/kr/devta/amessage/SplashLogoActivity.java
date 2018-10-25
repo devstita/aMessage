@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
-import com.github.omadahealth.lollipin.lib.managers.LockManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.gun0912.tedpermission.PermissionListener;
@@ -25,9 +24,6 @@ public class SplashLogoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_logo);
         Manager.getInstance().initActivity(this);
-
-        LockManager<IntoAppActivity> lockManager = LockManager.getInstance();
-        lockManager.enableAppLock(getApplicationContext(), IntoAppActivity.class);
 
         checkPermission();
     }
