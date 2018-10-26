@@ -10,13 +10,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
-
 import java.util.ArrayList;
 
-// TODO: Finger Print + PIN Authorization
 public class MainActivity extends AppCompatActivity {
     private static ActivityStatus status = null;
 

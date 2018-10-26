@@ -4,6 +4,145 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ApplicationSettingsActivity">
+    tools:context=".ApplicationSettingsActivity"
+    android:background="@color/backgroundColor" >
 
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/applicationSettings_Number1Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="1" />
+
+            <Button
+                android:id="@+id/applicationSettings_Number2Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="2" />
+
+            <Button
+                android:id="@+id/applicationSettings_Number3Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="3" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/applicationSettings_Number4Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="4" />
+
+            <Button
+                android:id="@+id/applicationSettings_Number5Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="5" />
+
+            <Button
+                android:id="@+id/applicationSettings_Number6Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="6" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/applicationSettings_Number7Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="7" />
+
+            <Button
+                android:id="@+id/applicationSettings_Number8Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="8" />
+
+            <Button
+                android:id="@+id/applicationSettings_Number9Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="9" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/applicationSettings_ClearButton"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="C" />
+
+            <Button
+                android:id="@+id/applicationSettings_Number0Button"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="0" />
+
+            <Button
+                android:id="@+id/applicationSettings_BackspaceButton"
+                android:layout_width="25dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:text="←" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/applicationSettings_FingerprintStatusImageView"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:tint="@color/greyText"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
+        app:srcCompat="?android:attr/fingerprintAuthDrawable"
+        tools:ignore="NewApi" />
 </android.support.constraint.ConstraintLayout>
