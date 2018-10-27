@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-// DONE: Check Permission in Android 8.0 OREO
 public class NetworkBroadcastReceiver extends BroadcastReceiver {
 
     @Override

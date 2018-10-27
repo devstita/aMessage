@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Manager.getInstance().initActivity(this);
 
+        startActivity(new Intent(getApplicationContext(), LockScreenActivity.class));
+
         if (getIntent().getExtras() != null && getIntent().getExtras().containsKey("FriendInfo")) {
             Intent chatIntent = new Intent(getApplicationContext(), ChatActivity.class);
             chatIntent.putExtra("FriendInfo", getIntent().getSerializableExtra("FriendInfo"));
@@ -105,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<FriendInfo> previousFriendArrayList = Manager.getInstance().readChatList();
         for (FriendInfo friendInfo : previousFriendArrayList) {
             if (friendInfo != null) adapter.addItem(friendInfo);
-            else Manager.getInstance().print("Item: Null");
+            else Manager.print("Item: Null");
         }
         adapter.refresh();
     }

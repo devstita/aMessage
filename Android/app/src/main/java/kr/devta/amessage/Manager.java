@@ -30,6 +30,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +70,9 @@ public class Manager {
 
     public final String NAME_CHAT_SEPARATOR = "[$ NAME_CHAT $]";
     public final String KEY_CHAT_SENDER_SEPARATOR = "$"; // $: Expression Symbol, \\$: String Symbol ( = java.util.regex.Pattern.quote("$")
+
+    public final String NAME_LOCK_APPLICATION = "Name_LockApplication";
+    public final String KEY_PIN = "Key_PIN";
 
     public SharedPreferences getSharedPreferences(String name) {
         return context.getSharedPreferences(name, Context.MODE_PRIVATE);
@@ -370,6 +375,19 @@ public class Manager {
         return builder;
     }
 
+    public String toSHA512(String s) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            byte[] digest = md.digest(s.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < digest.length; i++) sb.append(Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1));
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     //    PART: Etc Method And Variable
     public final String NONE = "[$ NONE $]";
     public final String SEPARATOR = "_";
@@ -377,7 +395,7 @@ public class Manager {
     public final String NOTIFICATION_CHANNEL_ID = "aMessage Notification ID";
     public final String NOTIFICATION_CHANNEL_NAME = "aMessage Notification";
 
-    public void print(String m) {
+    public static void print(String m) {
         Log.d("AMESSAGE_DEBUG", m);
     }
 

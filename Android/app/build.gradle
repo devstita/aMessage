@@ -40,7 +40,6 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
-    // DONE: Solve Error
     //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:28.0.0'
 
@@ -52,9 +51,10 @@ dependencies {
     api 'com.google.firebase:firebase-core:16.0.4' // Google Firebase Core
     implementation 'com.google.firebase:firebase-auth:16.0.5' // Google Firebase Auth
     implementation 'com.firebaseui:firebase-ui-auth:4.0.0' // Google Firebase Auth UI
-    implementation 'com.google.firebase:firebase-database:16.0.3' // Google Firebase RealTime Database
+    implementation 'com.google.firebase:firebase-database:16.0.3'
+    // Google Firebase RealTime Database
     api 'gun0912.ted:tedpermission:2.2.0' // TedPermission
-    api ('io.socket:socket.io-client:1.0.0') {
+    api('io.socket:socket.io-client:1.0.0') {
         exclude group: 'org.json', module: 'json'
     } // Socket.io Android Client
 }

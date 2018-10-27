@@ -66,7 +66,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (messageEditText.getText().toString().contains("\n")) {
-                    Manager.getInstance().print("Enter key Clicked!!");
+                    Manager.print("Enter key Clicked!!");
                     messageEditText.setText(messageEditText.getText().toString().replace("\n", ""));
                     sendButton.performClick();
                 } else {
@@ -174,7 +174,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public static void updateUI() {
-        Manager.getInstance().print("updateUI() -> my: " + Manager.getInstance().myNetworkStatus + ", friend: " + Manager.getInstance().friendNetworkStatus);
+        Manager.print("updateUI() -> my: " + Manager.getInstance().myNetworkStatus + ", friend: " + Manager.getInstance().friendNetworkStatus);
         messageEditText.setHint((Manager.getInstance().myNetworkStatus && Manager.getInstance().friendNetworkStatus) ? "aMessage 로 전송" : "SMS 로 전송");
     }
 

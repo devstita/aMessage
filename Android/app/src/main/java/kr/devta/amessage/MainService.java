@@ -120,7 +120,7 @@ public class MainService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Manager.getInstance().init(getApplicationContext());
-        Manager.getInstance().print("MainService.onCreate() -> Database Init Successful");
+        Manager.print("MainService.onCreate() -> Database Init Successful");
 
         myDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Chats").child(Manager.getInstance().getMyPhone());
         versionDatabaseReference = FirebaseDatabase.getInstance().getReference().child("Management/VersionCode");
@@ -154,15 +154,15 @@ public class MainService extends Service {
                 socket.connect();
 
                 socket.on(Socket.EVENT_CONNECT, args -> {
-                    Manager.getInstance().print("Connected to Socket.IO Server");
+                    Manager.print("Connected to Socket.IO Server");
                     socket.emit("phone", Manager.getInstance().getMyPhone());
                 }).on(Socket.EVENT_RECONNECT, args -> {
-                    Manager.getInstance().print("Re-Connected to Socket.IO Server");
+                    Manager.print("Re-Connected to Socket.IO Server");
                     socket.emit("phone", Manager.getInstance().getMyPhone());
-                }).on(Socket.EVENT_DISCONNECT, args -> Manager.getInstance().print("Disconnected to Socket.IO Server"));
+                }).on(Socket.EVENT_DISCONNECT, args -> Manager.print("Disconnected to Socket.IO Server"));
             } catch (URISyntaxException e) {
                 e.printStackTrace();
-                Manager.getInstance().print("Error from Socket.IO");
+                Manager.print("Error from Socket.IO");
             }
         }).start();
 
@@ -178,6 +178,6 @@ public class MainService extends Service {
         super.onDestroy();
         myDatabaseReference.removeEventListener(myDatabaseReferenceEventListener);
         versionDatabaseReference.removeEventListener(versionDatabaseReferenceEventListener);
-        Manager.getInstance().print("MainService.onDestroy() -> Database Destroy Successful");
+        Manager.print("MainService.onDestroy() -> Database Destroy Successful");
     }
 }

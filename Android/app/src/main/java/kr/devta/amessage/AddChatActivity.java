@@ -41,7 +41,7 @@ public class AddChatActivity extends AppCompatActivity {
             String innerName = nameEditText.getText().toString();
             String innerPhone = phoneEditText.getText().toString().trim();
 
-//                Manager.getInstance().print("AddChatActivity.DoneButtonClicked -> Name: " + innerName + ", Phone: " + innerPhone);
+//                Manager.print("AddChatActivity.DoneButtonClicked -> Name: " + innerName + ", Phone: " + innerPhone);
 
             if (innerName == null || innerName.isEmpty()) {
                 Toast.makeText(getApplicationContext(), "Name Error", Toast.LENGTH_SHORT).show();
