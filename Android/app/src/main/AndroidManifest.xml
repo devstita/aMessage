@@ -64,7 +64,8 @@
         </receiver>
 
         <activity android:name=".LockScreenActivity" />
-        <activity android:name=".ApplicationSettingsActivity"></activity>
+        <activity android:name=".ApplicationSettingsActivity" />
+        <activity android:name=".ChangePasswordActivity"></activity>
     </application>
 
 </manifest>

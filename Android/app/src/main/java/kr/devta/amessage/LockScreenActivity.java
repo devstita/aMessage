@@ -12,8 +12,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-// DONE: PIN TextView
-// DONE: Finger Print
 public class LockScreenActivity extends AppCompatActivity {
     boolean useFingerprint;
     FingerprintManagerCompat fingerprintManager;
@@ -31,6 +29,7 @@ public class LockScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock_screen);
         Manager.getInstance().initActivity(this);
+        setResult(RESULT_CANCELED);
 
         useFingerprint = true;
         fingerprintManager = FingerprintManagerCompat.from(getApplicationContext());
@@ -54,7 +53,12 @@ public class LockScreenActivity extends AppCompatActivity {
 
         curPin = "● ● ● ●";
 
-        if (!fingerprintManager.isHardwareDetected() || Build.VERSION.SDK_INT < 23) {
+        if (Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).getBoolean(Manager.getInstance().KEY_USE_FINGERPRINT, false)) {
+            if (!fingerprintManager.isHardwareDetected() || Build.VERSION.SDK_INT < 23) {
+                useFingerprint = false;
+                fingerprintStatusImageView.setVisibility(View.GONE);
+            }
+        } else {
             useFingerprint = false;
             fingerprintStatusImageView.setVisibility(View.GONE);
         }
@@ -95,8 +99,8 @@ public class LockScreenActivity extends AppCompatActivity {
 
                 Manager.print("curPin.trim().replaceAll(\"[^0-9]\", \"\").length(): " + curPin.trim().replaceAll("[^0-9]", "").length());
                 if (curPin.trim().replaceAll("[^0-9]", "").length() >= 4) {
-                    String pin = Manager.getInstance().toSHA512(Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).getString("Password", Manager.getInstance().NONE));
-                    if (Manager.getInstance().toSHA512(curPin).equals(pin)) {
+                    String pin = Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).getString(Manager.getInstance().KEY_PIN, Manager.getInstance().NONE);
+                    if (Manager.getInstance().encrypt(curPin).equals(pin)) {
                         setResult(RESULT_OK);
                         finish();
                     } else {
@@ -123,6 +127,13 @@ public class LockScreenActivity extends AppCompatActivity {
                 break;
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        setResult(RESULT_CANCELED);
+        finish();
+//        super.onBackPressed();
     }
 
     private void authSucceed() {

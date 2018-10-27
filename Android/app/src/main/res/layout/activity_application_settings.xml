@@ -4,6 +4,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ApplicationSettingsActivity">
+    tools:context=".ApplicationSettingsActivity"
+    android:background="@color/backgroundColor" >
+
+    <Switch
+        android:id="@+id/applicationSettings_EnableApplicationLockSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:switchPadding="20dp"
+        android:text="잠금 활성화"
+        android:textColor="@color/text"
+        android:textSize="40sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3" />
+
+    <Switch
+        android:id="@+id/applicationSettings_UseFingerprintSwitch"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="지문 사용"
+        android:textColor="@color/text"
+        android:textSize="40sp"
+        app:layout_constraintEnd_toEndOf="@+id/applicationSettings_EnableApplicationLockSwitch"
+        app:layout_constraintStart_toStartOf="@+id/applicationSettings_EnableApplicationLockSwitch"
+        app:layout_constraintTop_toBottomOf="@+id/applicationSettings_EnableApplicationLockSwitch" />
+
+    <Button
+        android:id="@+id/applicationSettings_ChangePinButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="비밀번호 변경"
+        app:layout_constraintEnd_toEndOf="@+id/applicationSettings_EnableApplicationLockSwitch"
+        app:layout_constraintStart_toStartOf="@+id/applicationSettings_EnableApplicationLockSwitch"
+        app:layout_constraintTop_toBottomOf="@+id/applicationSettings_UseFingerprintSwitch" />
 
 </android.support.constraint.ConstraintLayout>

@@ -1,6 +1,7 @@
 package kr.devta.amessage;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -27,7 +28,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Manager.getInstance().initActivity(this);
 
-        startActivity(new Intent(getApplicationContext(), LockScreenActivity.class));
+        if (!Manager.getInstance().isServiceRunning(MainService.class)) {
+            Manager.print("MainService is not running");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(new Intent(getApplicationContext(), MainService.class));
+            } else {
+                startService(new Intent(getApplicationContext(), MainService.class));
+            }
+        }
+
+        if (Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).getBoolean(Manager.getInstance().KEY_APPLICATION_LOCK_ENABLED, false))
+            startActivityForResult(new Intent(getApplicationContext(), LockScreenActivity.class), Manager.getInstance().REQUEST_CODE_LOCK_SCREEN);
 
         if (getIntent().getExtras() != null && getIntent().getExtras().containsKey("FriendInfo")) {
             Intent chatIntent = new Intent(getApplicationContext(), ChatActivity.class);
@@ -95,8 +106,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.mainMenu_Settings:
                 startActivity(new Intent(getApplicationContext(), ApplicationSettingsActivity.class));
                 break;
-            case R.id.mainMenu_Lock:
-                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -116,7 +125,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Manager.getInstance().REQUEST_CODE_ADD_FRIEND && resultCode == RESULT_OK) {
+        if (requestCode == Manager.getInstance().REQUEST_CODE_LOCK_SCREEN) {
+            if (resultCode != RESULT_OK) finish();
+        } else if (requestCode == Manager.getInstance().REQUEST_CODE_ADD_FRIEND && resultCode == RESULT_OK) {
             String name = data.getStringExtra("Name");
             String phone = data.getStringExtra("Phone");
             FriendInfo friendInfo = new FriendInfo(name, phone);

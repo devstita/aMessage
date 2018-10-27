@@ -22,6 +22,7 @@ import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.firebase.database.DataSnapshot;
@@ -30,6 +31,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Collator;
@@ -38,6 +42,12 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.SecretKeySpec;
 
 public class Manager {
     //    PART: Singleton
@@ -61,6 +71,8 @@ public class Manager {
     public final int REQUEST_CODE_CONTACT_INTENT = 1002;
     public final int REQUEST_CODE_CHAT = 1003;
     public final int REQUEST_CODE_CHAT_SETTING = 1004;
+    public final int REQUEST_CODE_LOCK_SCREEN = 1005;
+    public final int REQUEST_CODE_CHANGE_PASSWORD = 1006;
 
     //    PART: SharedPreferences
     public final String NAME_TUTORIAL = "Name_Tutorial";
@@ -72,7 +84,9 @@ public class Manager {
     public final String KEY_CHAT_SENDER_SEPARATOR = "$"; // $: Expression Symbol, \\$: String Symbol ( = java.util.regex.Pattern.quote("$")
 
     public final String NAME_LOCK_APPLICATION = "Name_LockApplication";
-    public final String KEY_PIN = "Key_PIN";
+    public final String KEY_APPLICATION_LOCK_ENABLED = "Key_ApplicationLockEnabled";
+    public final String KEY_USE_FINGERPRINT = "Key_UseFingerprint";
+    public final String KEY_PIN = "Key_Pin";
 
     public SharedPreferences getSharedPreferences(String name) {
         return context.getSharedPreferences(name, Context.MODE_PRIVATE);
@@ -375,17 +389,17 @@ public class Manager {
         return builder;
     }
 
-    public String toSHA512(String s) {
+    public String encrypt(String s) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
             byte[] digest = md.digest(s.getBytes());
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < digest.length; i++) sb.append(Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1));
+            for (byte aDigest : digest) sb.append(Integer.toString((aDigest & 0xff) + 0x100, 16).substring(1));
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        return null;
+        return NONE;
     }
 
     //    PART: Etc Method And Variable
@@ -402,15 +416,6 @@ public class Manager {
     public void initActivity(Activity activity) {
        init(activity.getApplicationContext());
         print("Activity Init: " + activity.getClass().getSimpleName());
-
-        if (!isServiceRunning(MainService.class)) {
-           print("MainService is not running");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                activity.getApplicationContext().startForegroundService(new Intent(activity.getApplicationContext(), MainService.class));
-            } else {
-                activity.getApplicationContext().startService(new Intent(activity.getApplicationContext(), MainService.class));
-            }
-        }
     }
 
     public long getCurrentTimeMills() {
