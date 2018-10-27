@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Switch;
 
-// DONE: Pin Setting
 public class ApplicationSettingsActivity extends AppCompatActivity {
     Switch enableApplicationLockSwitch;
     Switch useFingerprintSwitch;
@@ -34,12 +33,14 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
             }
         });
 
+        // TODO: Disable if Device NOT support fingerprint
         useFingerprintSwitch.setChecked(Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).getBoolean(Manager.getInstance().KEY_USE_FINGERPRINT, false));
         useFingerprintSwitch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
             Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putBoolean(Manager.getInstance().KEY_USE_FINGERPRINT, isChecked).apply();
             if (isChecked) enableApplicationLockSwitch.setChecked(true);
         }));
 
+        // TODO: DO NOT Disable Application Lock after Change Password Error (BackPress -> Cancel)
         changePinButton.setEnabled(enableApplicationLockSwitch.isChecked());
         changePinButton.setOnClickListener(v -> startActivityForResult(new Intent(getApplicationContext(), ChangePasswordActivity.class), Manager.getInstance().REQUEST_CODE_CHANGE_PASSWORD));
     }
