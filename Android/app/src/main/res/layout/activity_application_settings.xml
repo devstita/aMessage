@@ -42,7 +42,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="비밀번호 변경"
+        android:text="PIN 변경"
         app:layout_constraintEnd_toEndOf="@+id/applicationSettings_EnableApplicationLockSwitch"
         app:layout_constraintStart_toStartOf="@+id/applicationSettings_EnableApplicationLockSwitch"
         app:layout_constraintTop_toBottomOf="@+id/applicationSettings_UseFingerprintSwitch" />

@@ -72,7 +72,8 @@ public class Manager {
     public final int REQUEST_CODE_CHAT = 1003;
     public final int REQUEST_CODE_CHAT_SETTING = 1004;
     public final int REQUEST_CODE_LOCK_SCREEN = 1005;
-    public final int REQUEST_CODE_CHANGE_PASSWORD = 1006;
+    public final int REQUEST_CODE_CREATE_PASSWORD = 1006;
+    public final int REQUEST_CODE_CHANGE_PASSWORD = 1007;
 
     //    PART: SharedPreferences
     public final String NAME_TUTORIAL = "Name_Tutorial";

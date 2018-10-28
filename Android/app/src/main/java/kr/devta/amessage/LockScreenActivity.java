@@ -3,13 +3,16 @@ package kr.devta.amessage;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class LockScreenActivity extends AppCompatActivity {
@@ -17,6 +20,7 @@ public class LockScreenActivity extends AppCompatActivity {
     FingerprintManagerCompat fingerprintManager;
 
     ConstraintLayout rootLayout;
+    LinearLayout keypadRoot;
     TextView pinTextView;
     Button[] keypadButtons;
     Button clearButton, backspaceButton;
@@ -35,6 +39,7 @@ public class LockScreenActivity extends AppCompatActivity {
         fingerprintManager = FingerprintManagerCompat.from(getApplicationContext());
 
         rootLayout = findViewById(R.id.lockScreen_RootLayout);
+        keypadRoot = findViewById(R.id.lockScreen_KeypadRootLayout);
         pinTextView = findViewById(R.id.lockScreen_PinTextView);
         keypadButtons = new Button[10];
         keypadButtons[0] = findViewById(R.id.lockScreen_Number0Button);
@@ -54,14 +59,8 @@ public class LockScreenActivity extends AppCompatActivity {
         curPin = "● ● ● ●";
 
         if (Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).getBoolean(Manager.getInstance().KEY_USE_FINGERPRINT, false)) {
-            if (!fingerprintManager.isHardwareDetected() || Build.VERSION.SDK_INT < 23) {
-                useFingerprint = false;
-                fingerprintStatusImageView.setVisibility(View.GONE);
-            }
-        } else {
-            useFingerprint = false;
-            fingerprintStatusImageView.setVisibility(View.GONE);
-        }
+            if (!fingerprintManager.isHardwareDetected() || Build.VERSION.SDK_INT < 23) disableFingerprint(true, true);
+        } else disableFingerprint(true, true);
 
         FingerprintManagerCompat.AuthenticationCallback callback = new FingerprintManagerCompat.AuthenticationCallback() {
             @Override
@@ -79,7 +78,7 @@ public class LockScreenActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationError(int errMsgId, CharSequence errString) {
                 super.onAuthenticationError(errMsgId, errString);
-                disableFingerprint();
+                disableFingerprint(false, false);
             }
 
             @Override
@@ -146,25 +145,35 @@ public class LockScreenActivity extends AppCompatActivity {
         fingerprintStatusImageView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.shake));
     }
 
-    private void disableFingerprint() {
+    private void disableFingerprint(boolean removeImageViewFast, boolean moveKeypad) {
         useFingerprint = false;
-        Animation fadeOutAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out);
-        fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
 
-            }
+        if (removeImageViewFast) fingerprintStatusImageView.setVisibility(View.GONE);
+        else {
+            Animation fadeOutAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out);
+            fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                fingerprintStatusImageView.setVisibility(View.GONE);
-            }
+                }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    fingerprintStatusImageView.setVisibility(View.GONE);
+                }
 
-            }
-        });
-        fingerprintStatusImageView.startAnimation(fadeOutAnimation);
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            fingerprintStatusImageView.startAnimation(fadeOutAnimation);
+        }
+
+        if (moveKeypad) {
+            ConstraintLayout.LayoutParams rootLayoutParams = (ConstraintLayout.LayoutParams) keypadRoot.getLayoutParams();
+            rootLayoutParams.verticalBias = 0.7F;
+            keypadRoot.setLayoutParams(rootLayoutParams);
+        }
     }
 }

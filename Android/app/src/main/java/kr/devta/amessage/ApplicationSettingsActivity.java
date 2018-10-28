@@ -2,6 +2,7 @@ package kr.devta.amessage;
 
 import android.content.Intent;
 import android.support.annotation.Nullable;
+import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Button;
@@ -25,7 +26,7 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
         enableApplicationLockSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Manager.print("Enable Changed:" + isChecked);
             if (isChecked) {
-                startActivityForResult(new Intent(getApplicationContext(), ChangePasswordActivity.class), Manager.getInstance().REQUEST_CODE_CHANGE_PASSWORD);
+                startActivityForResult(new Intent(getApplicationContext(), ChangePasswordActivity.class), Manager.getInstance().REQUEST_CODE_CREATE_PASSWORD);
             } else {
                 Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putBoolean(Manager.getInstance().KEY_APPLICATION_LOCK_ENABLED, false).apply();
                 useFingerprintSwitch.setChecked(false);
@@ -33,14 +34,20 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
             }
         });
 
-        // TODO: Disable if Device NOT support fingerprint
-        useFingerprintSwitch.setChecked(Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).getBoolean(Manager.getInstance().KEY_USE_FINGERPRINT, false));
-        useFingerprintSwitch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
-            Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putBoolean(Manager.getInstance().KEY_USE_FINGERPRINT, isChecked).apply();
-            if (isChecked) enableApplicationLockSwitch.setChecked(true);
-        }));
+        // DONE: Disable if Device NOT support fingerprint
+        if (!FingerprintManagerCompat.from(getApplicationContext()).isHardwareDetected()) {
+            useFingerprintSwitch.setEnabled(false);
+            useFingerprintSwitch.setChecked(false);
+            Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putBoolean(Manager.getInstance().KEY_USE_FINGERPRINT, false).apply();
+        } else {
+            useFingerprintSwitch.setChecked(Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).getBoolean(Manager.getInstance().KEY_USE_FINGERPRINT, false));
+            useFingerprintSwitch.setOnCheckedChangeListener(((buttonView, isChecked) -> {
+                Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putBoolean(Manager.getInstance().KEY_USE_FINGERPRINT, isChecked).apply();
+                if (isChecked) enableApplicationLockSwitch.setChecked(true);
+            }));
+        }
 
-        // TODO: DO NOT Disable Application Lock after Change Password Error (BackPress -> Cancel)
+        // DONE: DO NOT Disable Application Lock after Change Password Error (BackPress -> Cancel)
         changePinButton.setEnabled(enableApplicationLockSwitch.isChecked());
         changePinButton.setOnClickListener(v -> startActivityForResult(new Intent(getApplicationContext(), ChangePasswordActivity.class), Manager.getInstance().REQUEST_CODE_CHANGE_PASSWORD));
     }
@@ -49,10 +56,11 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == Manager.getInstance().REQUEST_CODE_CHANGE_PASSWORD) {
+        if (requestCode == Manager.getInstance().REQUEST_CODE_CREATE_PASSWORD) {
             if (resultCode == RESULT_OK) {
+                assert data != null;
                 String pin = Manager.getInstance().encrypt(data.getStringExtra(Manager.getInstance().KEY_PIN));
-                Manager.print("Enable Lock or Change Pin: " + pin);
+                Manager.print("Enable Lock: " + pin);
                 Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putBoolean(Manager.getInstance().KEY_APPLICATION_LOCK_ENABLED, true).apply();
                 Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putString(Manager.getInstance().KEY_PIN, pin).apply();
                 changePinButton.setEnabled(true);
@@ -61,6 +69,13 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
                 enableApplicationLockSwitch.setChecked(false);
                 useFingerprintSwitch.setChecked(false);
                 changePinButton.setEnabled(true);
+            }
+        } else if (requestCode == Manager.getInstance().REQUEST_CODE_CHANGE_PASSWORD) {
+            if (resultCode == RESULT_OK) {
+                assert data != null;
+                String pin = Manager.getInstance().encrypt(data.getStringExtra(Manager.getInstance().KEY_PIN));
+                Manager.print("Change Pin: " + pin);
+                Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putString(Manager.getInstance().KEY_PIN, pin).apply();
             }
         }
     }
