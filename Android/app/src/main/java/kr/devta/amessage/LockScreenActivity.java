@@ -14,9 +14,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class LockScreenActivity extends AppCompatActivity {
-    boolean useFingerprint;
     FingerprintManagerCompat fingerprintManager;
 
     ConstraintLayout rootLayout;
@@ -35,7 +35,6 @@ public class LockScreenActivity extends AppCompatActivity {
         Manager.getInstance().initActivity(this);
         setResult(RESULT_CANCELED);
 
-        useFingerprint = true;
         fingerprintManager = FingerprintManagerCompat.from(getApplicationContext());
 
         rootLayout = findViewById(R.id.lockScreen_RootLayout);
@@ -66,7 +65,7 @@ public class LockScreenActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationSucceeded(FingerprintManagerCompat.AuthenticationResult result) {
                 super.onAuthenticationSucceeded(result);
-                if (useFingerprint) authSucceed();
+                authSucceed();
             }
 
             @Override
@@ -78,12 +77,14 @@ public class LockScreenActivity extends AppCompatActivity {
             @Override
             public void onAuthenticationError(int errMsgId, CharSequence errString) {
                 super.onAuthenticationError(errMsgId, errString);
+                fingerprintMessage(errString.toString());
                 disableFingerprint(false, false);
             }
 
             @Override
             public void onAuthenticationHelp(int helpMsgId, CharSequence helpString) {
                 super.onAuthenticationHelp(helpMsgId, helpString);
+                fingerprintMessage(helpString.toString());
             }
         };
         fingerprintManager.authenticate(null, 0, null, callback, null);
@@ -142,12 +143,16 @@ public class LockScreenActivity extends AppCompatActivity {
 
     private void fingerprintFail() {
         Manager.print("Fingerprint Fail");
+        fingerprintMessage("등록된 지문과 일치하지 않습니다. ");
         fingerprintStatusImageView.startAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.shake));
     }
 
-    private void disableFingerprint(boolean removeImageViewFast, boolean moveKeypad) {
-        useFingerprint = false;
+    private void fingerprintMessage(String s) {
+        Manager.print("Fingerprint Info: " + s);
+        Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
+    }
 
+    private void disableFingerprint(boolean removeImageViewFast, boolean moveKeypad) {
         if (removeImageViewFast) fingerprintStatusImageView.setVisibility(View.GONE);
         else {
             Animation fadeOutAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fade_out);

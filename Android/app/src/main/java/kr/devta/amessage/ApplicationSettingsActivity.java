@@ -34,7 +34,6 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
             }
         });
 
-        // DONE: Disable if Device NOT support fingerprint
         if (!FingerprintManagerCompat.from(getApplicationContext()).isHardwareDetected()) {
             useFingerprintSwitch.setEnabled(false);
             useFingerprintSwitch.setChecked(false);
@@ -47,7 +46,6 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
             }));
         }
 
-        // DONE: DO NOT Disable Application Lock after Change Password Error (BackPress -> Cancel)
         changePinButton.setEnabled(enableApplicationLockSwitch.isChecked());
         changePinButton.setOnClickListener(v -> startActivityForResult(new Intent(getApplicationContext(), ChangePasswordActivity.class), Manager.getInstance().REQUEST_CODE_CHANGE_PASSWORD));
     }
