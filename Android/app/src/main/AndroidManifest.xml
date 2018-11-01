@@ -36,25 +36,30 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".AddChatActivity" />
         <activity android:name=".ChatActivity" />
+        <activity android:name=".ChatSettingActivity" />
+        <activity android:name=".LockScreenActivity" />
+        <activity android:name=".ApplicationSettingsActivity" />
+        <activity android:name=".ChangePasswordActivity" />
 
         <service
             android:name=".MainService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
-        <receiver android:name=".MainBroadcastReceiver">
+        <receiver android:name=".MainBroadcastReceiver"
+            android:permission="android.permission.BROADCAST_SMS"
+            android:enabled="true"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
 
-        <activity android:name=".ChatSettingActivity" />
-
         <receiver
             android:name=".NetworkBroadcastReceiver"
             android:enabled="false"
-            android:exported="false">
+            android:exported="false" >
             <intent-filter>
                 <action
                     android:name="android.net.conn.CONNECTIVITY_CHANGE"
@@ -62,10 +67,6 @@
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
             </intent-filter>
         </receiver>
-
-        <activity android:name=".LockScreenActivity" />
-        <activity android:name=".ApplicationSettingsActivity" />
-        <activity android:name=".ChangePasswordActivity"></activity>
     </application>
 
 </manifest>
