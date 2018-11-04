@@ -390,7 +390,7 @@ public class Manager {
         return builder;
     }
 
-    public String encrypt(String s) {
+    public String toSHA(String s) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
             byte[] digest = md.digest(s.getBytes());

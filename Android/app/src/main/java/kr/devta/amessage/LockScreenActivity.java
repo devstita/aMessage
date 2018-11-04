@@ -3,13 +3,11 @@ package kr.devta.amessage;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
 import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -100,7 +98,7 @@ public class LockScreenActivity extends AppCompatActivity {
                 Manager.print("curPin.trim().replaceAll(\"[^0-9]\", \"\").length(): " + curPin.trim().replaceAll("[^0-9]", "").length());
                 if (curPin.trim().replaceAll("[^0-9]", "").length() >= 4) {
                     String pin = Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).getString(Manager.getInstance().KEY_PIN, Manager.getInstance().NONE);
-                    if (Manager.getInstance().encrypt(curPin).equals(pin)) {
+                    if (Manager.getInstance().toSHA(curPin).equals(pin)) {
                         setResult(RESULT_OK);
                         finish();
                     } else {

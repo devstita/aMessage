@@ -57,7 +57,7 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
         if (requestCode == Manager.getInstance().REQUEST_CODE_CREATE_PASSWORD) {
             if (resultCode == RESULT_OK) {
                 assert data != null;
-                String pin = Manager.getInstance().encrypt(data.getStringExtra(Manager.getInstance().KEY_PIN));
+                String pin = Manager.getInstance().toSHA(data.getStringExtra(Manager.getInstance().KEY_PIN));
                 Manager.print("Enable Lock: " + pin);
                 Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putBoolean(Manager.getInstance().KEY_APPLICATION_LOCK_ENABLED, true).apply();
                 Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putString(Manager.getInstance().KEY_PIN, pin).apply();
@@ -71,7 +71,7 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
         } else if (requestCode == Manager.getInstance().REQUEST_CODE_CHANGE_PASSWORD) {
             if (resultCode == RESULT_OK) {
                 assert data != null;
-                String pin = Manager.getInstance().encrypt(data.getStringExtra(Manager.getInstance().KEY_PIN));
+                String pin = Manager.getInstance().toSHA(data.getStringExtra(Manager.getInstance().KEY_PIN));
                 Manager.print("Change Pin: " + pin);
                 Manager.getInstance().getSharedPreferences(Manager.getInstance().NAME_LOCK_APPLICATION).edit().putString(Manager.getInstance().KEY_PIN, pin).apply();
             }
