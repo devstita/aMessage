@@ -1,0 +1,24 @@
+{
+  "name": "a-message",
+  "version": "1.0.0",
+  "description": "aMessage - 아이폰의 iMessage 를 안드로이드에서도 사용할 수 있도록",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devstita/aMessage"
+  },
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Devta",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "firebase-admin": "^6.0.0",
+    "socket.io": "^2.1.1"
+  },
+  "engines": {
+    "node": "8.11.3",
+    "npm": "6.4.1"
+  }
+}
